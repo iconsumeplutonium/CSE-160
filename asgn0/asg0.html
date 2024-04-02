@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>assignment 0</title>
+    </head>
+
+    <body onload="main()">
+        <canvas id="myCanvas" width="400" height="400">
+            Please use a browser that supports canvas
+        </canvas>
+        <br>
+
+        v1: x
+        <input id="v1X">
+        y
+        <input id="v1Y">
+
+        <br>
+        v2: x
+        <input id="v2X">
+        y
+        <input id="v2Y">
+
+        <br>
+        <button id="drawButton" onclick="handleDrawEvent()">Draw</button>
+
+        <br><br>
+        Operation:
+        <select id="operation">
+            <option value="add">Add</option>
+            <option value="sub">Subtract</option>
+            <option value="mul">Multiply</option>
+            <option value="div">Divide</option>
+            <option value="mag">Magnitude</option>
+            <option value="norm">Normalize</option>
+            <option value="dot">Angle Between</option>
+            <option value="cross">Area</option>
+        </select>
+
+        Scalar:
+        <input id="scalar">
+        <br>
+        <button id="drawOpButton" onclick="handleDrawOperationEvent()">Draw</button>
+
+        <script src="lib/cuon-matrix-cse160.js"></script>
+        <script src="asg0.js"> </script>
+    </body>
+</html>
