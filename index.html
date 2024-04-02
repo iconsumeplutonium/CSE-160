@@ -1,1 +1,12 @@
 <h1>Test<h1>
+<script>
+    fetch('https://api.github.com/repos/iconsumeplutonium/CSE-160/contents/')
+        .then(response => response.json())
+        .then(data => {
+        let html = '';
+        for(let file of data) {
+            html += `<a href="${file.path}">${file.name}</a><br>`;
+        }
+        document.body.innerHTML = html;
+    });
+</script>
