@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>asgn1</title>
+        <link rel="shortcut icon" href="#"> <!-- to silence the stupid favicon not found error-->
+    </head>
+
+    <body onload="main()">
+        <canvas id="webgl" width="400" height="400">
+            Please use the browser supporting "canvas".
+        </canvas>
+
+        <script src="lib/webgl-utils.js"></script>
+        <script src="lib/webgl-debug.js"></script>
+        <script src="lib/cuon-utils.js"></script>
+        <script src="asgn1.js"></script>
+        <script src="Point.js"></script>
+        <script src="Triangle.js"></script>
+        <script src="Circle.js"></script>
+
+        <br>
+        <button onclick="clearCanvas()">Clear Canvas</button>
+        <br><br>
+
+        <button onclick="SetDrawMode(1)">Points</button>
+        <button onclick="SetDrawMode(3)">Triangles</button>
+        <button onclick="SetDrawMode(4)">Circles</button>
+
+        <br><br>
+        Shape Color:
+        <br>
+        Red:
+        <input type="range" min="0" max="100" value="50" class="slider" id="redSlider">
+        Green:
+        <input type="range" min="0" max="100" value="50" class="slider" id="greenSlider">
+        Blue:
+        <input type="range" min="0" max="100" value="50" class="slider" id="blueSlider">
+
+        <br><br>
+        Shape Size:
+        <input type="range" min="1" max="50" value="25" id="shapeSizeSlider">
+        (Circles) Segment Count:
+        <input type="range" min="1" max="14" value="14" id="segmentSlider">
+    </body>
+</html>
