@@ -73,11 +73,11 @@ function pushGray(v) {
     } else
         shuffledColor = gray;
         
-    g_shapes.push(new ScaleneTriangle(v, shuffledColor));
+    g_shapes.push(new ScaleneTriangle(v, shuffledColor, true));
 }
 
 function pushBlack(v) {
-    g_shapes.push(new ScaleneTriangle(v, [0.101, 0.101, 0.101, 1]));
+    g_shapes.push(new ScaleneTriangle(v, [0.101, 0.101, 0.101, 1], true));
 }
 
 function toggleColor() {

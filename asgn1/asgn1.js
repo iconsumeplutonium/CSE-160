@@ -93,6 +93,7 @@ function renderAllShapes() {
 }
 
 var g_shapes = [];
+let triBuffer = [];
 function click(ev) {
     if (ev.buttons != 1)
         return;
@@ -109,6 +110,24 @@ function click(ev) {
         case 1:
             g_shapes.push(new Point([x, y], [r, g, b, 1.0], size));
             break;
+        case 2:
+            if (triBuffer.length < 3)
+                triBuffer.push([x, y])
+
+            let text = document.getElementById("selectedPoints");
+            text.innerText = "Points Selected: ";
+            if (triBuffer.length == 0 || triBuffer.length == 3)
+                text.innerText += "None";
+            else
+                for (let i = 0; i < triBuffer.length; i++) {
+                    text.innerText += "(" + triBuffer[i][0] + ", " + triBuffer[i][1] + ") ";
+                }
+
+            if (triBuffer.length == 3) {
+                g_shapes.push(new ScaleneTriangle(triBuffer, [r, g, b, 1.0], false));
+                triBuffer = [];
+            }
+            break;
         case 3:
             g_shapes.push(new Triangle([x, y], [r, g, b, 1.0], size));
             break;
@@ -118,6 +137,7 @@ function click(ev) {
             break;
     }
 
+    console.log(triBuffer);
     renderAllShapes();
 }
 
@@ -128,6 +148,8 @@ function clearCanvas() {
 
 function SetDrawMode(mode) {
     drawMode = mode;
+    if (drawMode != 2)
+        triBuffer = [];
 }
 
 //im using 36 as the number of segments for a perfect circle
@@ -155,3 +177,4 @@ function mapSliderToMultiplesOf360() {
         case 14: return 36;
     }
 }
+

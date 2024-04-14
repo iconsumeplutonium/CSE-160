@@ -2,12 +2,12 @@
 //to make an equilateral triangle
 //vertices -> an array of three indices of the coordinates array
 class ScaleneTriangle {
-    constructor(vertices, color) {
+    constructor(vertices, color, useCoords) {
         this.color = color;
 
         let verts = [];
         for (let i = 0; i < vertices.length; i++) {
-            let coord = coordinates[vertices[i]];
+            let coord = (useCoords) ? coordinates[vertices[i]] : vertices[i];
             verts.push(coord[0]);
             verts.push(coord[1]);
         }
