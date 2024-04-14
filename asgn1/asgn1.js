@@ -17,7 +17,6 @@ var FSHADER_SOURCE = `
 let canvas, gl;
 let a_Position, u_FragColor, a_Size;
 let redSlider, greenSlider, blueSlider;
-let checkbox;
 let drawMode = 1;
 
 function setupWebGL() {
@@ -64,15 +63,11 @@ function main() {
     greenSlider = document.getElementById("greenSlider");
     blueSlider = document.getElementById("blueSlider");
 
-    checkbox = document.getElementById("showDrawing");
-    checkbox.addEventListener('change', showDrawing);
-
     // Specify the color for clearing <canvas>
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
     // Clear <canvas>
     gl.clear(gl.COLOR_BUFFER_BIT);
-    showDrawing();
 }
 
 
