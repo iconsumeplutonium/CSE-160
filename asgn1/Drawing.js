@@ -65,7 +65,7 @@ function pushGray(v) {
         let shuffleRange = 1;
         
         for (let i = 0; i < gray.length; i++) {
-            let shuffle = (Math.random() - 0.5) * 2 * shuffleRange; // Removed the negative sign before shuffleRange
+            let shuffle = (Math.random() - 0.5) * 2 * shuffleRange;
             let newVal = Math.min(Math.max(gray[i] + shuffle, 0), 1);
             shuffledColor.push(newVal);
         }
@@ -88,11 +88,11 @@ function toggleColor() {
 
 //painstakingly copied from the graph i made
 //https://www.desmos.com/calculator/tfigyrkjb3
-coordinates = [
+var coordinates = [
     [-0.914, 0.021],
     [-0.9136, -0.0038],
     [0.3347, -0.0726],
-    [0.463, -0.0794],
+    [0.463, -0.07],
     [0.3627, -0.085],
     [0.428, -0.09],
     [0.888, -0.093],
