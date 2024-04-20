@@ -1,0 +1,24 @@
+Assignment 5A <br> <br>
+
+<a href="asgn5a.html">Link to asgn5a.html</a> <br>
+<a href="https://iconsumeplutonium.github.io/CSE-160/asgn5a/asgn5a.html">Link to live hosted version on Github Pages</a> <br> <br>
+
+<h3>Notes to Grader</h3>
+
+<p>
+I chose three objects: an RGB icosahedron that constantly cycles through all the colors, a cube textured to look like the Minecraft command block, and a sphere with a face on it <br><br>
+
+The command block textures I got from <a href="https://minecraft.wiki/w/List_of_block_textures#Animated_Textures">the Minecraft wiki</a> (I edited the sprite sheet in Photoshop a bit to only get one texture from the image because I didn't want to figure out animated textures.) <br> <br>
+
+The face on the sphere is the face of Linus Tech Tips, the famous tech youtuber. Specifically, the image of the texture I used is from <a href="https://www.reddit.com/r/LinusTechTips/comments/16zh9j8/new_linus_face_without_watermark_for_meeming/">this reddit post</a>, which <br>
+in itself was extracted from <a href="https://youtu.be/TdBnkxxImwI?t=15">this video.</a> <br><br>
+
+The TIE Interceptor model I used is from <a href="https://sketchfab.com/3d-models/star-wars-tiein-interceptor-80171ec2930b4949836bcf24d9694c41">here.</a> <br><br><br>
+
+The TIE Interceptor, unlike the other three objects which simply rotate along one or two axes, not only rotates, but also moves. It moves in a circular motion such that it appears on one half of the screen, travels in a half-circle, and <br>
+moves off the other side of the screen. This was actually not that bad, because it was basic parametric equations. The real challenge was having it actually rotate to face the direction it is moving in. I spent hours trying to find a way to mathematically calculate <br>
+the exact angle that the TIE Interceptor needs to be at in order at each part of the circle. Eventually I discovered the <code>lookAt()</code> function (which rotates the object to face a point) and had it constantly look at the next point on the circle as it travelled <br>
+giving the illusion that it is rotating perfectly along the circle. <br>
+
+The Interceptor also has three possible paths it can take: It can go at y=-1 (near the bottom of the screen), y=0 (along the middle of the screen), or y=1 (along the top of the screen). It randomly rolls a number between 0 and 1, multiplies it by 2, and subtracts 1 <br>
+(which puts it into the range -1 to 1). Then I round it to the nearest integer (which is -1, 0, or 1) which becomes the new y coordinate for that path. 

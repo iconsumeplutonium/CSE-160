@@ -88,6 +88,7 @@ function render(time) {
 
     renderer.render(scene, camera);
 
+    //fps counter code from https://www.growingwiththeweb.com/2017/12/fast-simple-js-fps-counter.html
     if (!lastCalledTime) {
         lastCalledTime = Date.now();
         fps = 0;
@@ -105,13 +106,8 @@ function render(time) {
         let angle = (time * speed) % (Math.PI * 2);
 
         if (angle < 0.1) {
-            let rand = Math.random();
-            yCoord = Math.round(rand * 2 - 1);
-
-            console.log("here");
+            yCoord = Math.round(Math.random() * 2 - 1);
         }
-
-        console.log(yCoord)
 
         let r = 4;
         let x = r * Math.cos(angle);
