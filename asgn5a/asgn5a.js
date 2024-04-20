@@ -8,9 +8,9 @@ const near = 0.1;
 const far = 10;
 
 const color = 0xFFFFFF;
-const intensity = 1;
+const intensity = 1.5;
 
-let renderer, scene, camera;
+let renderer, scene, camera, light;
 let cubeGeometry, icosahedronGeo, sphereGeo;
 let material, loader;
 let cubes = [];
@@ -25,7 +25,7 @@ function main() {
 
     scene = new three.Scene();
 
-    const light = new three.DirectionalLight(color, intensity);
+    light = new three.DirectionalLight(color, intensity);
     light.position.set(0, 1, 4);
     scene.add(light);
 
@@ -113,6 +113,8 @@ function render(time) {
         let x = r * Math.cos(angle);
         let y = r * Math.sin(angle);
         interceptor.position.set(x, yCoord, y);
+
+        //light.position.y = yCoord;
 
         let nextAngle = ((time * speed) + 0.1) % (Math.PI * 2);
         let nextX = r * Math.cos(nextAngle);
