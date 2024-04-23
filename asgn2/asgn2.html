@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>asgn2</title>
+        <link rel="shortcut icon" href="#"> <!-- to silence the stupid favicon not found error-->
+    </head>
+
+    <body onload="main()">
+        <canvas id="webgl" width="400" height="400">
+            Please use the browser supporting "canvas".
+        </canvas>
+        <script src="lib/webgl-utils.js"></script>
+        <script src="lib/webgl-debug.js"></script>
+        <script src="lib/cuon-utils.js"></script>
+        <script src="lib/cuon-matrix.js"></script>
+        <script src="asgn2.js"></script>
+        <script src="Cube.js"></script> <br><br>
+        Rotation:
+        <br>
+        X:
+        <input type="range" min="0" max="360" value="0" class="slider" id="xSlider" oninput="renderAllShapes()">
+        Y:
+        <input type="range" min="0" max="360" value="0" class="slider" id="ySlider" oninput="renderAllShapes()">
+        Z:
+        <input type="range" min="0" max="360" value="0" class="slider" id="zSlider" oninput="renderAllShapes()">
+
+    </body>
+</html>
