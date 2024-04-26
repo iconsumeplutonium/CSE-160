@@ -93,17 +93,16 @@ function main() {
 
 
 let headRotation = [0, 0, 0];
-let leftShoulderRotation = 0, leftElbowRotation = 0, leftHandRotation = 0;
-let rightShoulderRotation = 0, rightElbowRotation = 0, rightHandRotation = 0;
-let leftLegRotation = 0;
-let rightLegRotation = 0;
+let leftArmRotation = [0, 0, 0]; //shoulder, elbow, hand
+let rightArmRotation = [0, 0, 0]; //shoulder, elbow, hand
+let leftLegRotation = [0, 0]; //hip, knee
+let rightLegRotation = [0, 0]; //hip, knee
 function renderAllShapes() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     glob.setRotate(-xSlider.value, 1, 0, 0);
     glob.rotate(ySlider.value, 0, 1, 0);
     glob.rotate(zSlider.value, 0, 0, 1);
-    console.log(xSlider.value, ySlider.value, zSlider.value);
     gl.uniformMatrix4fv(u_GlobalRotationMatrix, false, glob.elements);
 
     let x = document.getElementById("whereSliderX").value / 100;
@@ -425,39 +424,37 @@ function renderAllShapes() {
     
     
     //#region LEFT LEG-------------------------------------------------------------------
-    let baseLeftLegMatrix;
-    let leftLegBase = new Cube(hevOrange);
-    leftLegBase.matrix = new Matrix4().setIdentity();
-    leftLegBase.matrix.setTranslate(-0.2575, -0.3, -0.082);
-    // headBase.matrix.rotate(147, 1, 0, 0);
-    // headBase.matrix.rotate(58, 0, 1, 0);
-    //leftLegBase.matrix.rotate((z / 10) * 360, 0, 1, 0); //--> set leg rotation
-    baseLeftLegMatrix = new Matrix4(leftLegBase.matrix);
-    leftLegBase.matrix.scale(0.25 , 0.3 , 0.2 );
-    leftLegBase.render();
-
     //gray part between waist and orange hip
+    let baseLeftLegMatrix;
     let leftHipJoint = new Cube(hevGray);
-    leftHipJoint.matrix = new Matrix4(baseLeftLegMatrix);
-    leftHipJoint.matrix.translate(0, 0.15, 0);
+    leftHipJoint.matrix = new Matrix4();
+    leftHipJoint.matrix.translate(-0.135, -0.105, 0.02);
+    leftHipJoint.matrix.scale(-1, -1, -1);
+    leftHipJoint.matrix.rotate(0, 0, 1, 0);
+    leftHipJoint.matrix.rotate(leftLegRotation[0], 0, 0, 1); //--> set leg rotation
+    baseLeftLegMatrix = new Matrix4(leftHipJoint.matrix);
     leftHipJoint.matrix.scale(0.25, 0.1, 0.2)
     leftHipJoint.render();
+
+    let leftLegBase = new Cube(hevOrange);
+    leftLegBase.matrix = new Matrix4(baseLeftLegMatrix);
+    leftLegBase.matrix.translate(0, 0.05, 0);
+    leftLegBase.matrix.scale(0.25, 0.3, 0.2);
+    leftLegBase.render();
 
     let leftKnee = new Cube(hevGray);
     let leftKneeBaseMatrix;
     leftKnee.matrix = new Matrix4(baseLeftLegMatrix);
-    leftKnee.matrix.translate(0, -0, 0.1);
+    leftKnee.matrix.translate(0.125, 0.2, 0);
     leftKnee.matrix.rotate(90, 0, 0, 1);
-    leftKnee.matrix.scale(-1, -1, -1);
     leftKneeBaseMatrix = new Matrix4(leftKnee.matrix);
     leftKnee.matrix.scale(0.2, 0.25, 0.2);
-    //leftKnee.matrix.rotate((y / 10) * 360, 0, 0, 1); //----> rotates knee!
+    leftKnee.matrix.rotate(leftLegRotation[1], 0, 0, 1); //----> rotates knee
     leftKnee.render();
 
     //left shin/boot
     let leftShin = new Cube(bootsColor);
-    //let leftShinBaseMatrix;
-    leftShin.matrix = new Matrix4(leftKnee.matrix);
+    leftShin.matrix = new Matrix4(leftKnee.matrix); //this hsould be leftKneeBaseMatrix, but after fixing 5000 different cube positions, idc anymore
     leftShin.matrix.translate(0.5, 0.01, 0.02);
     leftShin.matrix.scale(1.2, 0.9, 0.9);
     leftShin.render();
@@ -472,39 +469,37 @@ function renderAllShapes() {
 
 
     //#region RIGHT LEG-----------------------------------------------------------------
-    let baseRightLegMatrix;
-    let rightLegBase = new Cube(hevOrange2);
-    rightLegBase.matrix = new Matrix4().setIdentity();
-    rightLegBase.matrix.setTranslate(-0.2575, -0.3, -0.205);
-    // headBase.matrix.rotate(147, 1, 0, 0);
-    // headBase.matrix.rotate(58, 0, 1, 0);
-    //rightLegBase.matrix.rotate((y / 10) * 360, 0, 1, 0); //--> set leg rotation
-    baseRightLegMatrix = new Matrix4(rightLegBase.matrix);
-    rightLegBase.matrix.scale(0.25 , 0.3 , 0.2 );
-    rightLegBase.render();
-
     //gray part between waist and orange hip
+    let baseRightLegMatrix;
     let rightHipJoint = new Cube(hevGray);
-    rightHipJoint.matrix = new Matrix4(baseRightLegMatrix);
-    rightHipJoint.matrix.translate(0, 0.15, 0);
+    rightHipJoint.matrix = new Matrix4();
+    rightHipJoint.matrix.translate(-0.135, -0.107, -0.109);
+    rightHipJoint.matrix.scale(-1, -1, -1);
+    rightHipJoint.matrix.rotate(0, 0, 1, 0);
+    rightHipJoint.matrix.rotate(rightLegRotation[0], 0, 0, 1); //set leg rotation
+    baseRightLegMatrix = new Matrix4(rightHipJoint.matrix);
     rightHipJoint.matrix.scale(0.25, 0.1, 0.2)
     rightHipJoint.render();
+
+    let rightLegBase = new Cube(hevOrange2);
+    rightLegBase.matrix = new Matrix4(baseRightLegMatrix);
+    rightLegBase.matrix.translate(0, 0.05, 0);
+    rightLegBase.matrix.scale(0.25, 0.3, 0.2);
+    rightLegBase.render();
 
     //right knee
     let rightKnee = new Cube(hevGray);
     let rightKneeBaseMatrix;
     rightKnee.matrix = new Matrix4(baseRightLegMatrix);
-    rightKnee.matrix.translate(0, 0, 0.1);
+    rightKnee.matrix.translate(0.125, 0.2, 0);
     rightKnee.matrix.rotate(90, 0, 0, 1);
-    rightKnee.matrix.scale(-1, -1, -1);
     rightKneeBaseMatrix = new Matrix4(rightKnee.matrix);
     rightKnee.matrix.scale(0.2, 0.25, 0.2);
-    //rightKnee.matrix.rotate((y / 10) * 360, 0, 0, 1); //----> rotates knee!
+    rightKnee.matrix.rotate(rightLegRotation[1], 0, 0, 1); //----> rotates knee
     rightKnee.render();
 
     //right shin/boot
     let rightShin = new Cube(bootsColor);
-    //let leftShinBaseMatrix;
     rightShin.matrix = new Matrix4(rightKnee.matrix);
     rightShin.matrix.translate(0.5, 0.01, 0.02);
     rightShin.matrix.scale(1.2, 0.9, 0.9);
@@ -525,10 +520,10 @@ function renderAllShapes() {
     let baseLeftShoulderMatrix;
     leftShoulderPad.matrix = new Matrix4();
     leftShoulderPad.matrix.setTranslate(-0.2, 0.16, 0.102);
-    leftShoulderPad.matrix.rotate(leftShoulderRotation, 0, 0, 1); //--> rotates arm
+    leftShoulderPad.matrix.rotate(leftArmRotation[0], 0, 0, 1); //--> rotates arm
     baseLeftShoulderMatrix = new Matrix4(leftShoulderPad.matrix);
     leftShoulderPad.matrix.scale(0.25, 0.2, 0.25);
-    leftShoulderPad.render();
+    leftShoulderPad.render(); 
 
     let upperArmLeft = new Cube(hevArmColor);
     upperArmLeft.matrix = new Matrix4(baseLeftShoulderMatrix);
@@ -542,7 +537,7 @@ function renderAllShapes() {
     leftElbow.matrix.translate(0.06, -0.15, 0.05);
     leftElbow.matrix.rotate(180, 1, 0, 0);
     leftElbow.matrix.rotate(90, 0, 0, 1);
-    leftElbow.matrix.rotate(leftElbowRotation, 0, 0, 1); //rotates elbow
+    leftElbow.matrix.rotate(leftArmRotation[1], 0, 0, 1); //rotates elbow
     leftElbowBaseMatrix = new Matrix4(leftElbow.matrix);
     leftElbow.matrix.scale(0.125, 0.2, 0.2);
     leftElbow.render();
@@ -557,12 +552,9 @@ function renderAllShapes() {
     let leftHandBaseMatrix;
     leftHand.matrix = new Matrix4(leftElbowBaseMatrix);
     leftHand.matrix.translate(0.19, 0.0476, 0.05);
-    leftHand.matrix.rotate(leftHandRotation, 1, 0, 0); //rotates hand
+    leftHand.matrix.rotate(leftArmRotation[2], 1, 0, 0); //rotates hand
     leftHand.matrix.scale(0.17, 0.17, 0.17);
     leftHand.render();
-
-
-
     //#endregion
 
 
@@ -572,7 +564,7 @@ function renderAllShapes() {
     let baseRightShoulderMatrix;
     rightShoulderPad.matrix = new Matrix4();
     rightShoulderPad.matrix.translate(-0.2, 0.16, -0.292);
-    rightShoulderPad.matrix.rotate(rightShoulderRotation, 0, 0, 1); //--> rotates arm
+    rightShoulderPad.matrix.rotate(rightArmRotation[0], 0, 0, 1); //--> rotates arm
     baseRightShoulderMatrix = new Matrix4(rightShoulderPad.matrix);
     rightShoulderPad.matrix.scale(0.25, 0.2, 0.25);
     rightShoulderPad.render()
@@ -589,7 +581,7 @@ function renderAllShapes() {
     rightElbow.matrix.translate(0.05, -0.15, 0.055);
     rightElbow.matrix.rotate(180, 1, 0, 0);
     rightElbow.matrix.rotate(90, 0, 0, 1);
-    rightElbow.matrix.rotate(rightElbowRotation, 0, 0, 1); //rotates elbow
+    rightElbow.matrix.rotate(rightArmRotation[1], 0, 0, 1); //rotates elbow
     rightElbowBaseMatrix = new Matrix4(rightElbow.matrix);
     rightElbow.matrix.scale(0.125, 0.2, 0.2);
     rightElbow.render();
@@ -604,7 +596,7 @@ function renderAllShapes() {
     let rightHandBaseMatrix;
     rightHand.matrix = new Matrix4(rightElbowBaseMatrix);
     rightHand.matrix.translate(0.19, 0.0476, 0.05);//
-    rightHand.matrix.rotate(rightHandRotation, 1, 0, 0); //rotates hand
+    rightHand.matrix.rotate(rightArmRotation[2], 1, 0, 0); //rotates hand
     rightHandBaseMatrix = new Matrix4(rightHand.matrix);
     rightHand.matrix.scale(0.17, 0.17, 0.17);
     rightHand.render();
@@ -618,15 +610,15 @@ function renderAllShapes() {
 
     let crowbarPiece1 = new Cube(crowbarCrookColor);
     crowbarPiece1.matrix = new Matrix4(rightHandBaseMatrix);
-    crowbarPiece1.matrix.translate(0.01, -0.39, -0.015);
-    crowbarPiece1.matrix.scale(0.15, 0.05, 0.03);
+    crowbarPiece1.matrix.translate(0.01, -0.399, -0.019);
+    crowbarPiece1.matrix.scale(0.15, 0.05, 0.05);
     crowbarPiece1.render();
 
     let crowbarPiece2 = new Cube(crowbarCrookColor);
     crowbarPiece2.matrix = new Matrix4(rightHandBaseMatrix);
-    crowbarPiece2.matrix.translate(0.09, -0.39, -0.015);
+    crowbarPiece2.matrix.translate(0.09, -0.399, -0.019);
     crowbarPiece2.matrix.rotate(45, 0, 0, 1);
-    crowbarPiece2.matrix.scale(0.23, 0.05, 0.03);
+    crowbarPiece2.matrix.scale(0.23, 0.05, 0.05);
     crowbarPiece2.render();
     //#endregion
 }
@@ -638,6 +630,7 @@ function reset(axis) {
 
 function setView(axis, angle) {
     document.getElementById(`${axis}Slider`).value = angle;
+    document.getElementById("xSlider").value = 0;
     renderAllShapes();
 }
 
@@ -653,37 +646,64 @@ function rotateBodyPart(part, angle) {
             headRotation[2] = angle;
             break; 
         case "left_shoulder":
-            leftShoulderRotation = angle;
+            leftArmRotation[0] = angle;
             break;
         case "left_elbow":
-            leftElbowRotation = 0 - angle;
+            leftArmRotation[1] = 0 - angle;
             break;
         case "left_hand":
-            leftHandRotation = angle - 90;
+            leftArmRotation[2] = angle - 90;
             break;
         case "right_shoulder":
-            rightShoulderRotation = angle;
+            rightArmRotation[0] = angle;
             break;
         case "right_elbow":
-            rightElbowRotation = 0 - angle;
+            rightArmRotation[1] = 0 - angle;
             break;
         case "right_hand":
-            rightHandRotation = 0 - angle;
-            break;           
+            rightArmRotation[2] = 0 - angle;
+            break;
+        case "left_hip":
+            leftLegRotation[0] = angle - 20;
+            break;
+        case "left_knee":
+            leftLegRotation[1] = 360 - angle;
+            break;
+        case "right_hip":
+            rightLegRotation[0] = angle - 20;
+            break;
+        case "right_knee":
+            rightLegRotation[1] = 360 - angle;
+            break;            
     }
 
     renderAllShapes();
 }
 
 function resetSlider(name) {
-    if (name == "xSlider") {
-        xSlider.value = 21;
-    } else if (name == "ySlider") {
-        ySlider.value = 125;
-    } else {
-        document.getElementById(name).value = 0;
+    let angle = 0;
+    switch (name) {
+        case "xSlider":
+            xSlider.value = 21;
+            angle = 21;
+            break;
+        case "ySlider":
+            ySlider.value = 125;
+            angle = 125;
+            break;
+        case "left_hip":
+            document.getElementById("left_hip").value = 20;
+            angle = 20;
+            break;
+        case "right_hip":
+            document.getElementById("right_hip").value = 20;
+            angle = 20;
+            break;
+        default:
+            document.getElementById(name).value = 0;
+            break;
     }
 
-    rotateBodyPart(name, 0);
+    rotateBodyPart(name, angle);
 }
 

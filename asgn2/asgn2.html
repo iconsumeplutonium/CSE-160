@@ -23,22 +23,7 @@
                 </canvas>
             </div>
             <div class="controls-container">
-                Model Rotation
-                <div class="controls-container">
-                    <br>
-                    X:
-                    <input type="range" min="0" max="360" value="21" class="slider" id="xSlider" oninput="renderAllShapes()">
-                    <button onclick="resetSlider('xSlider')">Reset</button> <br>
-                    Y:
-                    <input type="range" min="0" max="360" value="125" class="slider" id="ySlider" oninput="renderAllShapes()">
-                    <button onclick="resetSlider('ySlider')">Reset</button> <br>
-                    Z:
-                    <input type="range" min="0" max="360" value="0" class="slider" id="zSlider" oninput="renderAllShapes()">
-                    <button onclick="resetSlider('zSlider')">Reset</button> <br>
-                </div>
-                <br><br><br>
 
-                Individual Part Rotation <br><br>
                 Head:
                 <div class="controls-container">
                     X:
@@ -78,10 +63,11 @@
                     Hand:
                     <input type="range" min="0" max="90" value="0" class="slider" id="right_hand" oninput="rotateBodyPart('right_hand', this.value)">
                     <button onclick="resetSlider('right_hand')">Reset</button> <br>
-                </div>                
+                </div> <br>
+
                 
 
-                <br><br><br><br><br><br><br><br><br><br><br><br>
+                <!-- <br><br><br><br><br><br><br><br><br><br><br><br> -->
                 random debug stuff (remove later) <br>
                 x: 
                 <input type="range" min="-500" max="500" value="0" class="slider" id="whereSliderX" oninput="renderAllShapes()">
@@ -103,7 +89,46 @@
                 <button onclick="setView('y', 270)">set 270</button>
 
             </div>
+
+            <div class="controls-container">
+                Model Rotation
+                <div class="controls-container">
+                    X:
+                    <input type="range" min="0" max="360" value="21" class="slider" id="xSlider" oninput="renderAllShapes()">
+                    <button onclick="resetSlider('xSlider')">Reset</button> <br>
+                    Y:
+                    <input type="range" min="0" max="360" value="125" class="slider" id="ySlider" oninput="renderAllShapes()">
+                    <button onclick="resetSlider('ySlider')">Reset</button> <br>
+                    Z:
+                    <input type="range" min="0" max="360" value="0" class="slider" id="zSlider" oninput="renderAllShapes()">
+                    <button onclick="resetSlider('zSlider')">Reset</button> <br>
+                </div>
+                <br>
+
+                Left Leg:
+                <div class="controls-container">
+                    Hip: 
+                    <input type="range" min="0" max="120" value="20" class="slider" id="left_hip" oninput="rotateBodyPart('left_hip', this.value)"> 
+                    <button onclick="resetSlider('left_hip')">Reset</button> <br>
+                    Knee:
+                    <input type="range" min="0" max="130" value="0" class="slider" id="left_knee" oninput="rotateBodyPart('left_knee', this.value)">
+                    <button onclick="resetSlider('left_knee')">Reset</button> <br>
+                </div> <br><br>
+
+                Right Leg:
+                <div class="controls-container">
+                    Hip: 
+                    <input type="range" min="0" max="120" value="20" class="slider" id="right_hip" oninput="rotateBodyPart('right_hip', this.value)"> 
+                    <button onclick="resetSlider('right_hip')">Reset</button> <br>
+                    Knee:
+                    <input type="range" min="0" max="130" value="0" class="slider" id="right_knee" oninput="rotateBodyPart('right_knee', this.value)">
+                    <button onclick="resetSlider('right_knee')">Reset</button> <br>
+                </div>
+
+            </div>
         </div>
+
+        
         <script src="lib/webgl-utils.js"></script>
         <script src="lib/webgl-debug.js"></script>
         <script src="lib/cuon-utils.js"></script>
