@@ -1,5 +1,12 @@
-class Cube {
+class Cube2 {
     constructor(color) {
+        //exactly the same as Cube.js, except this time its point of rotation is the *center* of the cube rather than the first edge
+        //i realized i shouldve done this from the start, but its too late now to change that (as of writing this, ive placed 53 cubes in the head,
+        //body, and both legs, and applying this fix to Cube.js completely obliterates my last 12 hours of work).
+        
+        //Update: turns out having one cube that can rotate around its center point and another cube that rotates around an edge is rather useful
+        //I can use the cube that rotates around its center for the shoulder joint, because that rotates in place
+        //and I can use the cube that rotates around its edge for the elbow joint
         this.color = color;
         this.matrix = null;
 
@@ -43,7 +50,7 @@ class Cube {
         for (let j = 0; j < indices.length; j++) {
             let index = indices[j];
             for (let i = 0; i < 3; i++) {
-                this.v.push(this.cornerCoords[index][i]);// - (this.cubeSize / 2));
+                this.v.push(this.cornerCoords[index][i] - (this.cubeSize / 2));
                 this.colors.push(this.color[0] * mod, this.color[1] * mod, this.color[2] * mod, this.color[3]); //a new color buffer, because I don't have a drawTriangles lol
             }
         }

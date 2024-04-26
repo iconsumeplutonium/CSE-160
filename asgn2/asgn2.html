@@ -4,26 +4,112 @@
         <meta charset="utf-8" />
         <title>asgn2</title>
         <link rel="shortcut icon" href="#"> <!-- to silence the stupid favicon not found error-->
+        <style>
+            .container {
+              display: inline-flex;
+            }
+            .controls-container {
+                width: 100%;
+                margin-left: 20px;
+            }
+          </style>
     </head>
 
     <body onload="main()">
-        <canvas id="webgl" width="400" height="400">
-            Please use the browser supporting "canvas".
-        </canvas>
+        <div class="container">
+            <div class="canvas-container">
+                <canvas id="webgl" width="600" height="600">
+                    Please use the browser that supports canvas.
+                </canvas>
+            </div>
+            <div class="controls-container">
+                Rotation Model:
+                <br>
+                X:
+                <input type="range" min="0" max="360" value="0" class="slider" id="xSlider" oninput="renderAllShapes()">
+                Y:
+                <input type="range" min="0" max="360" value="0" class="slider" id="ySlider" oninput="renderAllShapes()">
+                Z:
+                <input type="range" min="0" max="360" value="0" class="slider" id="zSlider" oninput="renderAllShapes()">
+                <br><br><br>
+
+                Rotate Individual Parts: <br><br>
+                Head:
+                <div class="controls-container">
+                    X:
+                    <input type="range" min="-30" max="30" value="0" class="slider" id="x_head" oninput="rotateBodyPart('x_head', this.value)"> 
+                    <button onclick="resetSlider('x_head')">Reset</button> <br>
+                    Y:
+                    <input type="range" min="-90" max="90" value="0" class="slider" id="y_head" oninput="rotateBodyPart('y_head', this.value)">
+                    <button onclick="resetSlider('y_head')">Reset</button> <br>
+                    Z:
+                    <input type="range" min="0" max="70" value="0" class="slider" id="z_head" oninput="rotateBodyPart('z_head', this.value)">
+                    <button onclick="resetSlider('z_head')">Reset</button> <br>
+                </div>
+                <br>
+
+                Left Arm:
+                <div class="controls-container">
+                    Shoulder: 
+                    <input type="range" min="0" max="180" value="0" class="slider" id="left_shoulder" oninput="rotateBodyPart('left_shoulder', this.value)"> 
+                    <button onclick="resetSlider('left_shoulder')">Reset</button> <br>
+                    Elbow:
+                    <input type="range" min="0" max="160" value="0" class="slider" id="left_elbow" oninput="rotateBodyPart('left_elbow', this.value)">
+                    <button onclick="resetSlider('left_elbow')">Reset</button> <br>
+                    Hand:
+                    <input type="range" min="0" max="90" value="0" class="slider" id="left_hand" oninput="rotateBodyPart('left_hand', this.value)">
+                    <button onclick="resetSlider('left_hand')">Reset</button> <br>
+                </div>
+                <br>
+
+                Right Arm:
+                <div class="controls-container">
+                    Shoulder: 
+                    <input type="range" min="0" max="180" value="0" class="slider" id="right_shoulder" oninput="rotateBodyPart('right_shoulder', this.value)"> 
+                    <button onclick="resetSlider('right_shoulder')">Reset</button> <br>
+                    Elbow:
+                    <input type="range" min="0" max="160" value="0" class="slider" id="right_elbow" oninput="rotateBodyPart('right_elbow', this.value)">
+                    <button onclick="resetSlider('right_elbow')">Reset</button> <br>
+                    Hand:
+                    <input type="range" min="0" max="90" value="0" class="slider" id="right_hand" oninput="rotateBodyPart('right_hand', this.value)">
+                    <button onclick="resetSlider('right_hand')">Reset</button> <br>
+                </div>                
+                
+
+                <br><br><br><br><br><br><br><br><br><br><br><br>
+                random debug stuff (remove later) <br>
+                x: 
+                <input type="range" min="-500" max="500" value="0" class="slider" id="whereSliderX" oninput="renderAllShapes()">
+                y: 
+                <input type="range" min="-500" max="500" value="0" class="slider" id="whereSliderY" oninput="renderAllShapes()">
+                z: 
+                <input type="range" min="-500" max="500" value="0" class="slider" id="whereSliderZ" oninput="renderAllShapes()">
+                <br>
+                <p id="cubeLocationText"></p>
+
+                <button onclick="reset('X')">reset X</button>
+                <button onclick="reset('Y')">reset Y</button>
+                <button onclick="reset('Z')">reset Z</button> <br>
+
+                Y:
+                <button onclick="setView('y', 0)">set 0</button> 
+                <button onclick="setView('y', 90)">set 90</button>
+                <button onclick="setView('y', 180)">set 180</button>
+                <button onclick="setView('y', 270)">set 270</button>
+
+            </div>
+        </div>
         <script src="lib/webgl-utils.js"></script>
         <script src="lib/webgl-debug.js"></script>
         <script src="lib/cuon-utils.js"></script>
         <script src="lib/cuon-matrix.js"></script>
         <script src="asgn2.js"></script>
-        <script src="Cube.js"></script> <br><br>
-        Rotation:
-        <br>
-        X:
-        <input type="range" min="0" max="360" value="0" class="slider" id="xSlider" oninput="renderAllShapes()">
-        Y:
-        <input type="range" min="0" max="360" value="0" class="slider" id="ySlider" oninput="renderAllShapes()">
-        Z:
-        <input type="range" min="0" max="360" value="0" class="slider" id="zSlider" oninput="renderAllShapes()">
+        <script src="Cube.js"></script>
+        <script src="Cube2.js"></script>
+        <script src="Lambda.js"></script>
+        <script src="colors.js"></script> <br><br>
+        
+
 
     </body>
 </html>
