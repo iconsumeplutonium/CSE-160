@@ -103,7 +103,7 @@ function renderAllShapes() {
     glob.setRotate(-xSlider.value, 1, 0, 0);
     glob.rotate(ySlider.value, 0, 1, 0);
     glob.rotate(zSlider.value, 0, 0, 1);
-    //console.log(xSlider.value, ySlider.value, zSlider.value);
+    console.log(xSlider.value, ySlider.value, zSlider.value);
     gl.uniformMatrix4fv(u_GlobalRotationMatrix, false, glob.elements);
 
     let x = document.getElementById("whereSliderX").value / 100;
@@ -676,7 +676,14 @@ function rotateBodyPart(part, angle) {
 }
 
 function resetSlider(name) {
-    document.getElementById(name).value = 0;
+    if (name == "xSlider") {
+        xSlider.value = 21;
+    } else if (name == "ySlider") {
+        ySlider.value = 125;
+    } else {
+        document.getElementById(name).value = 0;
+    }
+
     rotateBodyPart(name, 0);
 }
 

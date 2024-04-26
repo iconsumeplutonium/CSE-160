@@ -23,17 +23,22 @@
                 </canvas>
             </div>
             <div class="controls-container">
-                Rotation Model:
-                <br>
-                X:
-                <input type="range" min="0" max="360" value="0" class="slider" id="xSlider" oninput="renderAllShapes()">
-                Y:
-                <input type="range" min="0" max="360" value="0" class="slider" id="ySlider" oninput="renderAllShapes()">
-                Z:
-                <input type="range" min="0" max="360" value="0" class="slider" id="zSlider" oninput="renderAllShapes()">
+                Model Rotation
+                <div class="controls-container">
+                    <br>
+                    X:
+                    <input type="range" min="0" max="360" value="21" class="slider" id="xSlider" oninput="renderAllShapes()">
+                    <button onclick="resetSlider('xSlider')">Reset</button> <br>
+                    Y:
+                    <input type="range" min="0" max="360" value="125" class="slider" id="ySlider" oninput="renderAllShapes()">
+                    <button onclick="resetSlider('ySlider')">Reset</button> <br>
+                    Z:
+                    <input type="range" min="0" max="360" value="0" class="slider" id="zSlider" oninput="renderAllShapes()">
+                    <button onclick="resetSlider('zSlider')">Reset</button> <br>
+                </div>
                 <br><br><br>
 
-                Rotate Individual Parts: <br><br>
+                Individual Part Rotation <br><br>
                 Head:
                 <div class="controls-container">
                     X:
