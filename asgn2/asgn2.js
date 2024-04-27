@@ -20,8 +20,15 @@ var FSHADER_SOURCE = `
 let canvas, gl;
 let a_Position, a_Color, u_ModelMatrix, u_GlobalRotationMatrix;
 let globalRotx, globalRoty, globalRotz;
-let drawMode = 1;
 let xSlider, ySlider, zSlider;
+let lHipSlider, rHipSlider;
+let lKneeSlider, rKneeSlider;
+let lShoulderSlider, rShoulderSlider;
+let lElbowSlider, rElbowSlider;
+let audio;
+let animationSelector;
+let crowbarButton;
+let animationRequestID;
 
 function setupWebGL() {
     canvas = document.getElementById('webgl');
@@ -77,16 +84,29 @@ function main() {
     ySlider = document.getElementById("ySlider");
     zSlider = document.getElementById("zSlider");
 
-    // Specify the color for clearing <canvas>
+    lHipSlider = document.getElementById("left_hip");
+    rHipSlider = document.getElementById("right_hip");
+    lKneeSlider = document.getElementById("left_knee");
+    rKneeSlider = document.getElementById("right_knee");
+    lShoulderSlider = document.getElementById("left_shoulder");
+    rShoulderSlider = document.getElementById("right_shoulder");
+    lElbowSlider = document.getElementById("left_elbow");
+    rElbowSlider = document.getElementById("right_elbow");
+
+    audio = new Audio('sounds/crowbar.mp3');
+
+    animationSelector = document.getElementById("animationSelect");
+    animationSelector.addEventListener('change', OnAnimationSelect)
+
+    crowbarButton = document.getElementById("crowbarAnimationButton");
+
     gl.clearColor(0.09, 0.56, 0.69, 1.0);
 
-    // Clear <canvas>
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     glob = new Matrix4();
     gl.uniformMatrix4fv(u_GlobalRotationMatrix, false, glob.elements);
 
-    
     renderAllShapes();
 }
 
@@ -105,13 +125,11 @@ function renderAllShapes() {
     glob.rotate(zSlider.value, 0, 0, 1);
     gl.uniformMatrix4fv(u_GlobalRotationMatrix, false, glob.elements);
 
-    let x = document.getElementById("whereSliderX").value / 100;
-    let y = document.getElementById("whereSliderY").value / 100;
-    let z = document.getElementById("whereSliderZ").value / 100;
-    let text = document.getElementById("cubeLocationText");
-    text.innerText = x + ", " + y + ", " + z
-
-    console.log(rightArmRotation[0], rightArmRotation[1], rightArmRotation[2]);
+    // let x = document.getElementById("whereSliderX").value / 100;
+    // let y = document.getElementById("whereSliderY").value / 100;
+    // let z = document.getElementById("whereSliderZ").value / 100;
+    // let text = document.getElementById("cubeLocationText");
+    // text.innerText = x + ", " + y + ", " + z
 
     //#region HEAD-------------------------------------------------------------
     //Base head
@@ -625,16 +643,16 @@ function renderAllShapes() {
     //#endregion
 }
 
-function reset(axis) {
-    document.getElementById(`whereSlider${axis}`).value = 0;
-    renderAllShapes();
-}
+// function reset(axis) {
+//     document.getElementById(`whereSlider${axis}`).value = 0;
+//     renderAllShapes();
+// }
 
-function setView(axis, angle) {
-    document.getElementById(`${axis}Slider`).value = angle;
-    document.getElementById("xSlider").value = 0;
-    renderAllShapes();
-}
+// function setView(axis, angle) {
+//     document.getElementById(`${axis}Slider`).value = angle;
+//     document.getElementById("xSlider").value = 0;
+//     renderAllShapes();
+// }
 
 function rotateBodyPart(part, angle) {
     switch (part) {
@@ -722,30 +740,26 @@ function sigmoid3(x) {
     return 1 - 1 / (Math.pow(x + 1, 8));
 }
 
-let tick = 0;
-let rShoulderSlider = document.getElementById("right_shoulder");
-let rElbowSlider = document.getElementById("right_elbow");
-let audio = new Audio('sounds/crowbar.mp3');
-
 let lastTimeStamp = 0;
 let totalTime = 0;
 
-function beginAnimation(time) {
+function beginAnimation(time, name) {
     lastTimeStamp = time;
     totalTime = 0;
-    requestAnimationFrame(crowbarHit);
+    if (name == "crowbar") {
+        crowbarButton.disabled = true;
+        animationRequestID = requestAnimationFrame(crowbarHit);
+    } else
+        animationRequestID = requestAnimationFrame(walkAnimation);
 }
 
 function crowbarHit(time) {
     let deltaTime = time - lastTimeStamp;
     lastTimeStamp = time;
     totalTime += deltaTime;
-    
-    console.log("tick: ", totalTime);
 
     //shoulder: 0 -> 154
     //elbow: 0 -> -90
-
     let startTick = 0;
     let endTick = startTick + 1040;
     if (totalTime >= startTick && totalTime <= endTick) {
@@ -771,7 +785,7 @@ function crowbarHit(time) {
 
     //because this might never actually equal endTick
     let range = 30;
-    let soundTick = endTick - 400;
+    let soundTick = endTick - 350;
     if (totalTime > soundTick - 30 && totalTime < soundTick + 30) {
         audio.play();
     }
@@ -788,9 +802,71 @@ function crowbarHit(time) {
 
 
     renderAllShapes();
-    // tick++;
-    if (totalTime > 3000)
+    if (totalTime > 2800) {
+        crowbarButton.disabled = false;
         return;
+    }
 
-    requestAnimationFrame(crowbarHit);
+    animationRequestID = requestAnimationFrame(crowbarHit);
+}
+
+function walkAnimation(time) {
+    let deltaTime = time - lastTimeStamp;
+    lastTimeStamp = time;
+    totalTime += deltaTime;
+
+    let t = (Math.sin((totalTime / 150) / 2) + 1) / 2;
+
+    //left leg: 20 to -27
+    //right leg: -27 to 20    
+    const legMin = 25;
+    const legMax = -20;
+    leftLegRotation[0] = lHipSlider.value = legMin * t + legMax * (1 - t);
+    rightLegRotation[0] = rHipSlider.value = legMax * t + legMin * (1 - t);
+
+    // left knee: 360 to 317
+    // right knee: 317 to 360
+    const kneeMax = 317;
+    const kneeMin = 360;
+    leftLegRotation[1] = lKneeSlider.value = kneeMin * t + kneeMax * (1 - t);
+    rightLegRotation[1] = rKneeSlider.value = kneeMax * t + kneeMin * (1 - t);
+
+    //left shoulder: -23 to 12
+    //right shoulder: 12 to -23 (opposite of left/right legs)
+    const shoulderMin = -23;
+    const shoulderMax = 12;
+    leftArmRotation[0] = lShoulderSlider.value = shoulderMin * t + shoulderMax * (1 - t);
+    rightArmRotation[0] = rShoulderSlider.value = shoulderMax * t + shoulderMin * (1 - t);
+
+    //left elbow: 0 to -20
+    //right elbow: -20 to 0
+    const elbowMin = 0;
+    const elbowMax = -20;
+    leftArmRotation[1] = lElbowSlider.value = elbowMin * t + elbowMax * (1 - t);
+    rightArmRotation[1] = rElbowSlider.value = elbowMax * t + elbowMin * (1 - t);
+
+    renderAllShapes();
+    animationRequestID = requestAnimationFrame(walkAnimation);
+}
+
+function OnAnimationSelect() {
+    let choice = animationSelector.value;
+    if (choice == "none") {
+        crowbarButton.disabled = false;
+        cancelAnimationFrame(animationRequestID);
+        resetAll();
+    } else {
+        animationRequestID = requestAnimationFrame(function(time) {
+            beginAnimation(time, 'walk')
+        });
+        crowbarButton.disabled = true;
+
+    }
+}
+
+function resetAll() {
+    const sliderNames = ["x_head", "y_head", "z_head", "left_shoulder", "left_elbow", "left_hand", "right_shoulder", "right_elbow", "right_hand", "xSlider", "ySlider", "zSlider", "left_hip", "left_knee", "right_hip", "right_knee"];
+    for (let i = 0; i < sliderNames.length; i++) {
+        resetSlider(sliderNames[i]);
+    }
 }

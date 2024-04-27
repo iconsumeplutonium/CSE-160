@@ -65,14 +65,16 @@
                     <button onclick="resetSlider('right_hand')">Reset</button> <br>
                 </div> <br><br>
 
+                Animations:
                 <select id="animationSelect">
                     <option value="none">None</option>
-                    <option value="run">Running</option>
-                </select>
-                <button onclick="requestAnimationFrame(beginAnimation)">Crowbar</button>
+                    <option value="walk">Walking</option>
+                </select> <button id ="crowbarAnimationButton" onclick="requestAnimationFrame(function(time) {beginAnimation(time, 'crowbar')})">Crowbar Animation</button>
+                <br><br><br><br><br>
+                <button onclick="resetAll()">Reset All Sliders</button>
 
 
-                <br><br><br><br><br><br><br><br><br><br><br><br>
+                <!-- <br><br><br><br><br><br><br><br><br><br><br><br>
                 random debug stuff (remove later) <br>
                 x: 
                 <input type="range" min="-500" max="500" value="0" class="slider" id="whereSliderX" oninput="renderAllShapes()">
@@ -91,7 +93,7 @@
                 <button onclick="setView('y', 0)">set 0</button> 
                 <button onclick="setView('y', 90)">set 90</button>
                 <button onclick="setView('y', 180)">set 180</button>
-                <button onclick="setView('y', 270)">set 270</button>
+                <button onclick="setView('y', 270)">set 270</button> -->
 
             </div>
 
