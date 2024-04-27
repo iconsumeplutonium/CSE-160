@@ -25,7 +25,7 @@ let lHipSlider, rHipSlider;
 let lKneeSlider, rKneeSlider;
 let lShoulderSlider, rShoulderSlider;
 let lElbowSlider, rElbowSlider;
-let audio;
+let crowbarAudio, valveIntroAudio;
 let animationSelector;
 let crowbarButton;
 let animationRequestID;
@@ -96,7 +96,8 @@ function main() {
     lElbowSlider = document.getElementById("left_elbow");
     rElbowSlider = document.getElementById("right_elbow");
 
-    audio = new Audio('sounds/crowbar.mp3');
+    crowbarAudio = new Audio('sounds/crowbar.mp3');
+    valveIntroAudio = new Audio('sounds/valve_intro.mp3');
 
     animationSelector = document.getElementById("animationSelect");
     animationSelector.addEventListener('change', OnAnimationSelect)
@@ -832,7 +833,7 @@ function crowbarHit(time) {
     let range = 30;
     let soundTick = endTick - 350;
     if (totalTime > soundTick - 30 && totalTime < soundTick + 30) {
-        audio.play();
+        crowbarAudio.play();
     }
 
     startTick = soundTick + range + 1000;
@@ -900,10 +901,13 @@ function OnAnimationSelect() {
         crowbarButton.disabled = false;
         cancelAnimationFrame(animationRequestID);
         resetAll();
+        valveIntroAudio.pause();
+        valveIntroAudio.currentTime = 0;
     } else {
         animationRequestID = requestAnimationFrame(function(time) {
             beginAnimation(time, 'walk')
         });
+        valveIntroAudio.play();
         crowbarButton.disabled = true;
     }
 }
