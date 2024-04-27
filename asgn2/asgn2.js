@@ -29,6 +29,9 @@ let audio;
 let animationSelector;
 let crowbarButton;
 let animationRequestID;
+let isMouseDown;
+let enableMouseRotationCheckbox;
+let fpsCounter;
 
 function setupWebGL() {
     canvas = document.getElementById('webgl');
@@ -99,6 +102,32 @@ function main() {
     animationSelector.addEventListener('change', OnAnimationSelect)
 
     crowbarButton = document.getElementById("crowbarAnimationButton");
+    enableMouseRotationCheckbox = document.getElementById("enableRotation");
+
+    fpsCounter = document.getElementById("fps");
+
+    canvas.addEventListener('mousedown', function(event) {
+        isMouseDown = true;
+        if (event.shiftKey && !crowbarButton.disabled) {
+            requestAnimationFrame(function(time) {
+                beginAnimation(time, 'crowbar')
+            })
+        }
+    });
+    canvas.addEventListener('mouseup', function() {
+        isMouseDown = false;
+    });
+    canvas.addEventListener('mousemove', function(event) {
+        if (!isMouseDown || !enableMouseRotationCheckbox.checked)
+            return;
+
+        let [mouseX, mouseY] = convertCoordinatesToGL(event);
+        let rot = (mouseX) * 5;
+        glob.rotate(rot, 0, 1, 0);
+        ySlider.value = rot;
+        renderAllShapes(false);
+    });
+
 
     gl.clearColor(0.09, 0.56, 0.69, 1.0);
 
@@ -108,21 +137,37 @@ function main() {
     gl.uniformMatrix4fv(u_GlobalRotationMatrix, false, glob.elements);
 
     renderAllShapes();
+    countFPS();
 }
 
+function convertCoordinatesToGL(ev) {
+    var x = ev.clientX; 
+    var y = ev.clientY; 
+    var rect = ev.target.getBoundingClientRect();
 
+    x = ((x - rect.left) - canvas.width/2)/(canvas.width/2);
+    y = (canvas.height/2 - (y - rect.top))/(canvas.height/2);
+
+    return ([x, y]);
+}
+
+let lastCalledTime;
 
 let headRotation = [0, 0, 0];
 let leftArmRotation = [0, 0, 0]; //shoulder, elbow, hand
 let rightArmRotation = [0, 0, 0]; //shoulder, elbow, hand
 let leftLegRotation = [0, 0]; //hip, knee
 let rightLegRotation = [0, 0]; //hip, knee
-function renderAllShapes() {
+function renderAllShapes(useSliderValues = true) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    glob.setRotate(-xSlider.value, 1, 0, 0);
-    glob.rotate(ySlider.value, 0, 1, 0);
-    glob.rotate(zSlider.value, 0, 0, 1);
+    if (useSliderValues) {
+        glob.setRotate(-xSlider.value, 1, 0, 0);
+        glob.rotate(ySlider.value, 0, 1, 0);
+        glob.rotate(zSlider.value, 0, 0, 1);
+        
+    }
+
     gl.uniformMatrix4fv(u_GlobalRotationMatrix, false, glob.elements);
 
     // let x = document.getElementById("whereSliderX").value / 100;
@@ -860,7 +905,6 @@ function OnAnimationSelect() {
             beginAnimation(time, 'walk')
         });
         crowbarButton.disabled = true;
-
     }
 }
 
@@ -869,4 +913,20 @@ function resetAll() {
     for (let i = 0; i < sliderNames.length; i++) {
         resetSlider(sliderNames[i]);
     }
+}
+
+function countFPS() {
+    //fps counter code from https://www.growingwiththeweb.com/2017/12/fast-simple-js-fps-counter.html
+    if (!lastCalledTime) {
+        lastCalledTime = Date.now();
+        fps = 0;
+    } else {
+        delta = (Date.now() - lastCalledTime)/1000;
+        lastCalledTime = Date.now();
+        fps = 1/delta;
+    }
+
+    fpsCounter.innerText = "FPS: " + fps.toFixed(3);
+
+    requestAnimationFrame(countFPS);
 }
