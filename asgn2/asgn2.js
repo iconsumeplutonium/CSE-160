@@ -111,6 +111,8 @@ function renderAllShapes() {
     let text = document.getElementById("cubeLocationText");
     text.innerText = x + ", " + y + ", " + z
 
+    console.log(rightArmRotation[0], rightArmRotation[1], rightArmRotation[2]);
+
     //#region HEAD-------------------------------------------------------------
     //Base head
     let baseHeadMatrix;
@@ -707,3 +709,89 @@ function resetSlider(name) {
     rotateBodyPart(name, angle);
 }
 
+function sigmoid(x) {
+    let exponent = -((x - 0.3) / 0.1);
+    return 1 / (1 + Math.exp(exponent));
+}
+
+function sigmoid2(x) {
+    return Math.sin(1.5 * x);
+}
+
+function sigmoid3(x) {
+    return 1 - 1 / (Math.pow(x + 1, 8));
+}
+
+let tick = 0;
+let rShoulderSlider = document.getElementById("right_shoulder");
+let rElbowSlider = document.getElementById("right_elbow");
+let audio = new Audio('sounds/crowbar.mp3');
+
+let lastTimeStamp = 0;
+let totalTime = 0;
+
+function beginAnimation(time) {
+    lastTimeStamp = time;
+    totalTime = 0;
+    requestAnimationFrame(crowbarHit);
+}
+
+function crowbarHit(time) {
+    let deltaTime = time - lastTimeStamp;
+    lastTimeStamp = time;
+    totalTime += deltaTime;
+    
+    console.log("tick: ", totalTime);
+
+    //shoulder: 0 -> 154
+    //elbow: 0 -> -90
+
+    let startTick = 0;
+    let endTick = startTick + 1040;
+    if (totalTime >= startTick && totalTime <= endTick) {
+        let t = (totalTime - startTick) / (endTick - startTick);
+        let s = sigmoid3(t);
+        rightArmRotation[0] = rShoulderSlider.value = s * 154;
+        rightArmRotation[1] = s * -90;
+        rElbowSlider.value = Math.abs(rightArmRotation[1]);
+    }
+
+    //do nothing for like x ticks
+    startTick = endTick - 200; //why will it only work if i start the animation *before* the previous one finishes?????????/
+    endTick = startTick + 200;
+
+    //shoulder: 154 -> 77
+    //elbow: -90 -> 0
+    if (totalTime >= startTick && totalTime <= endTick) {
+        let t = (totalTime - startTick) / (endTick - startTick);
+        let s = sigmoid3(t);
+        rightArmRotation[0] = rShoulderSlider.value = 77 * s + (154 * (1 - s));
+        rightArmRotation[1] = rElbowSlider.value = -90 * (1 - s);
+    }
+
+    //because this might never actually equal endTick
+    let range = 30;
+    let soundTick = endTick - 500;
+    if (totalTime > soundTick - 30 && totalTime < soundTick + 30) {
+        console.log("audio");
+        audio.play();
+    }
+
+    startTick = soundTick + range + 1000;
+    endTick = startTick + 680; 
+    if (totalTime >= startTick && totalTime <= endTick) {
+        rightArmRotation[1] = rElbowSlider.value = 0;
+
+        let t = (totalTime - startTick) / (endTick - startTick);
+        let s = sigmoid2(t);
+        rightArmRotation[0] = rShoulderSlider.value = (77 * (1 - s));
+    }
+
+
+    renderAllShapes();
+    // tick++;
+    if (totalTime > 3000)
+        return;
+
+    requestAnimationFrame(crowbarHit);
+}

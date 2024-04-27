@@ -41,7 +41,7 @@
                 Left Arm:
                 <div class="controls-container">
                     Shoulder: 
-                    <input type="range" min="0" max="180" value="0" class="slider" id="left_shoulder" oninput="rotateBodyPart('left_shoulder', this.value)"> 
+                    <input type="range" min="-90" max="180" value="0" class="slider" id="left_shoulder" oninput="rotateBodyPart('left_shoulder', this.value)"> 
                     <button onclick="resetSlider('left_shoulder')">Reset</button> <br>
                     Elbow:
                     <input type="range" min="0" max="160" value="0" class="slider" id="left_elbow" oninput="rotateBodyPart('left_elbow', this.value)">
@@ -55,7 +55,7 @@
                 Right Arm:
                 <div class="controls-container">
                     Shoulder: 
-                    <input type="range" min="0" max="180" value="0" class="slider" id="right_shoulder" oninput="rotateBodyPart('right_shoulder', this.value)"> 
+                    <input type="range" min="-90" max="180" value="0" class="slider" id="right_shoulder" oninput="rotateBodyPart('right_shoulder', this.value)"> 
                     <button onclick="resetSlider('right_shoulder')">Reset</button> <br>
                     Elbow:
                     <input type="range" min="0" max="160" value="0" class="slider" id="right_elbow" oninput="rotateBodyPart('right_elbow', this.value)">
@@ -63,11 +63,16 @@
                     Hand:
                     <input type="range" min="0" max="90" value="0" class="slider" id="right_hand" oninput="rotateBodyPart('right_hand', this.value)">
                     <button onclick="resetSlider('right_hand')">Reset</button> <br>
-                </div> <br>
+                </div> <br><br>
 
-                
+                <select id="animationSelect">
+                    <option value="none">None</option>
+                    <option value="run">Running</option>
+                </select>
+                <button onclick="requestAnimationFrame(beginAnimation)">Crowbar</button>
 
-                <!-- <br><br><br><br><br><br><br><br><br><br><br><br> -->
+
+                <br><br><br><br><br><br><br><br><br><br><br><br>
                 random debug stuff (remove later) <br>
                 x: 
                 <input type="range" min="-500" max="500" value="0" class="slider" id="whereSliderX" oninput="renderAllShapes()">
