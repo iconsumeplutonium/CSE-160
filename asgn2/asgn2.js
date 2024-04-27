@@ -756,8 +756,8 @@ function crowbarHit(time) {
         rElbowSlider.value = Math.abs(rightArmRotation[1]);
     }
 
-    //do nothing for like x ticks
-    startTick = endTick - 200; //why will it only work if i start the animation *before* the previous one finishes?????????/
+    //do nothing for like 200ms
+    startTick = endTick - 200; //why will it only work if i start the animation *before* the previous one finishes?????????
     endTick = startTick + 200;
 
     //shoulder: 154 -> 77
@@ -771,9 +771,8 @@ function crowbarHit(time) {
 
     //because this might never actually equal endTick
     let range = 30;
-    let soundTick = endTick - 500;
+    let soundTick = endTick - 400;
     if (totalTime > soundTick - 30 && totalTime < soundTick + 30) {
-        console.log("audio");
         audio.play();
     }
 
