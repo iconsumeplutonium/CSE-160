@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>asgn3b</title>
+        <link rel="shortcut icon" href="#"> <!-- to silence the stupid favicon not found error-->
+        <style>
+            .container {
+              display: inline-flex;
+            }
+            .controls-container {
+                width: 100%;
+                margin-left: 20px;
+            }
+          </style>
+    </head>
+
+    <body onload="main()">
+        <div class="container">
+            <div class="canvas-container">
+                <canvas id="webgl" width="640" height="480">
+                    Please use the browser that supports canvas.
+                </canvas>
+            </div>
+            
+
+            <div class="controls-container">
+                Model Rotation
+                <div class="controls-container">
+                    X:
+                    <input type="range" min="-360" max="360" value="0" class="slider" id="xSlider" oninput="renderAllShapes()">
+                    <button onclick="resetSlider('xSlider')">Reset</button> <br>
+                    Y:
+                    <input type="range" min="0" max="360" value="125" class="slider" id="ySlider" oninput="renderAllShapes()">
+                    <button onclick="resetSlider('ySlider')">Reset</button> <br>
+                    Z:
+                    <input type="range" min="0" max="360" value="0" class="slider" id="zSlider" oninput="renderAllShapes()">
+                    <button onclick="resetSlider('zSlider')">Reset</button> <br>
+                </div>
+                <br>
+
+                Extra slider
+                <div class="controls-container">
+                    X:
+                    <input type="range" min="0" max="360" value="0" class="slider" id="debugX" oninput="renderAllShapes()">
+                    <button onclick="resetSlider('debugX')">Reset</button> <br>
+                    Y:
+                    <input type="range" min="0" max="360" value="0" class="slider" id="debugY" oninput="renderAllShapes()">
+                    <button onclick="resetSlider('debugY')">Reset</button> <br>
+                    Z:
+                    <input type="range" min="0" max="360" value="0" class="slider" id="debugZ" oninput="renderAllShapes()">
+                    <button onclick="resetSlider('debugZ')">Reset</button> <br>
+                </div>
+
+              
+            </div>
+        </div>
+
+
+        <p id="fps"></p>
+        
+        <script src="lib/webgl-utils.js"></script>
+        <script src="lib/webgl-debug.js"></script>
+        <script src="lib/cuon-utils.js"></script>
+        <script src="lib/cuon-matrix.js"></script>
+        <script src="asgn3b.js"></script>
+        <script src="Cube.js"></script>
+        <script src="Triangle.js"></script> <br><br>
+        
+        
+        <h2>Notes to Grader</h2> <br>
+
+        The comically large stone block is supposed to be my "ground plane."
+    </body>
+</html>
