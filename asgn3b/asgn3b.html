@@ -18,7 +18,7 @@
     <body onload="main()">
         <div class="container">
             <div class="canvas-container">
-                <canvas id="webgl" width="640" height="480">
+                <canvas id="webgl" width="1280" height="720">
                     Please use the browser that supports canvas.
                 </canvas>
             </div>
@@ -28,7 +28,7 @@
                 Model Rotation
                 <div class="controls-container">
                     X:
-                    <input type="range" min="-360" max="360" value="0" class="slider" id="xSlider" oninput="renderAllShapes()">
+                    <input type="range" min="0" max="360" value="0" class="slider" id="xSlider" oninput="renderAllShapes()">
                     <button onclick="resetSlider('xSlider')">Reset</button> <br>
                     Y:
                     <input type="range" min="0" max="360" value="125" class="slider" id="ySlider" oninput="renderAllShapes()">
@@ -51,8 +51,6 @@
                     <input type="range" min="0" max="360" value="0" class="slider" id="debugZ" oninput="renderAllShapes()">
                     <button onclick="resetSlider('debugZ')">Reset</button> <br>
                 </div>
-
-              
             </div>
         </div>
 
@@ -65,7 +63,11 @@
         <script src="lib/cuon-matrix.js"></script>
         <script src="asgn3b.js"></script>
         <script src="Cube.js"></script>
-        <script src="Triangle.js"></script> <br><br>
+        <script src="Triangle.js"></script>
+        <script src="Camera.js"></script>
+        <script src="https://raw.githubusercontent.com/josephg/noisejs/master/perlin.js"></script> <br><br>
+
+        <!-- https://github.com/josephg/noisejs -->
         
         
         <h2>Notes to Grader</h2> <br>

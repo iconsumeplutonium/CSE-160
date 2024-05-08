@@ -85,10 +85,7 @@ let xSlider, ySlider, zSlider;
 let debugX, debugY, debugZ;
 let fpsCounter;
 let mouseDelta;
-
-let eye = new Vector3([0, 0, -3]);
-let at = new Vector3([0, 0, 0]);
-let up = new Vector3([0, 1, 0]);
+let camera;
 
 function setupWebGL() {
     canvas = document.getElementById('webgl');
@@ -185,6 +182,8 @@ function main() {
     setupWebGL();
     connectVariablesToGLSL();
 
+    camera = new Camera(90);
+
     //adding a mousemove event listener causes the cube to only start rendering after like 20 seconds
     //doing it this method causes no delay
     xSlider = document.getElementById("xSlider");
@@ -253,22 +252,15 @@ function playerController() {
     //Q 81, E 69
 
     const speed = 0.1;
-    let d = at.sub(eye).normalize().mul(speed);
 
     if (keys.w) {
-        eye = eye.add(d);
-        at = at.add(d);
+        camera.moveForward(speed);
     } else if (keys.s) {
-        eye = eye.sub(d);
-        at = at.sub(d);
+        camera.moveBackward(speed);
     } else if (keys.a) {
-        let orthoganal = Vector3.cross(d, up).normalize().mul(speed);
-        eye = eye.sub(orthoganal);    
-        at = at.sub(orthoganal);
+        camera.moveLeft(speed);
     } else if (keys.d) {
-        let orthoganal = Vector3.cross(d, up).normalize().mul(speed);
-        eye = eye.add(orthoganal);
-        at = at.add(orthoganal);
+        camera.moveRight(speed);
     }
 
     renderAllShapes();
@@ -299,25 +291,18 @@ function renderAllShapes(useSliderValues = true) {
     debugY = document.getElementById("debugY");
     debugZ = document.getElementById("debugZ");
 
-    let projectionMatrix = new Matrix4();
-    projectionMatrix.setPerspective(90, canvas.width / canvas.height, 0.1, 100);
-    gl.uniformMatrix4fv(u_ProjectionMatrix, false, projectionMatrix.elements);
-
-    let viewMatrix = new Matrix4();
-    if (mouseDelta) {
-        
-        //console.log(vectorY.toString())
+    if (mouseDelta && document.pointerLockElement === canvas) {
         const EPSILON = 0.001;
 
         //Left and right
-        let atP = at.sub(eye).normalize();
         let m = new Matrix4();
-        m.setRotate(mouseDelta.x * -sensitivity, up.x, up.y, up.z);
-        let f = m.multiplyVector3(atP).normalize();
+        m.setRotate(mouseDelta.x * -sensitivity, camera.up.x, camera.up.y, camera.up.z);
+        let f = m.multiplyVector3(camera.forward).normalize();
 
-        let rightVector = Vector3.cross(atP, up).normalize();
-        m.setRotate(mouseDelta.y * -sensitivity, rightVector.x, rightVector.y, rightVector.z);
-        let g = m.multiplyVector3(atP).normalize();
+        //Up and down
+        m.setRotate(mouseDelta.y * -sensitivity, camera.right.x, camera.right.y, camera.right.z);
+        let g = m.multiplyVector3(camera.forward).normalize();
+
         //no matter what i do, clamping the fucking g vector clamps the f vector as well
         //i fucking hate this language
 
@@ -335,18 +320,14 @@ function renderAllShapes(useSliderValues = true) {
 
         //console.log(f.toString(), g.toString());
 
-        at = eye.add(g).add(f);
-
-        viewMatrix.setLookAt(eye.x, eye.y, eye.z, at.x, at.y, at.z, up.x, up.y, up.z);
-    }
-    gl.uniformMatrix4fv(u_ViewMatrix, false, viewMatrix.elements);
-    
+        camera.at = camera.eye.add(f).add(g);
+        camera.applyViewMatrix();
+    } 
 
     if (useSliderValues) {
         glob.setRotate(-xSlider.value, 1, 0, 0);
         glob.rotate(ySlider.value, 0, 1, 0);
-        glob.rotate(zSlider.value, 0, 0, 1);
-        
+        glob.rotate(zSlider.value, 0, 0, 1);        
     }
 
     gl.uniformMatrix4fv(u_GlobalRotationMatrix, false, glob.elements);
@@ -395,7 +376,6 @@ function resetSlider(name) {
     }
 
     renderAllShapes();
-    //rotateBodyPart(name, angle);
 }
 
 
