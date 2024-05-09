@@ -41,7 +41,6 @@ var FSHADER_SOURCE = `
 
     uniform int textureID;
     void main() {
-
         if (textureID == -2) {
             gl_FragColor = u_FragColor;
         } else if (textureID == -1) {
@@ -237,15 +236,33 @@ function main() {
         canvas.requestPointerLock();
     });
 
+    //console.log(Noise.GenerateNoiseMap(32, 32, 0.1, 4, 0.5, 2));
+    map = Noise.GenerateNoiseMap(32, 32, 0.1, 4, 0.5, 2);
+    for (let x = 0; x < 32; x++) {
+        for (let y = 0; y < 32; y++) {
+
+            let z = map[x][y].toFixed(1) * 10;
+            //for (let i = 0; i < z; i++) {
+            let block = new Cube();
+            block.textureArray = GRASS_BLOCK;
+            block.matrix.setTranslate(x, z, y);
+            blocks.push(block);
+            //}
+
+        }
+    }
+
     requestAnimationFrame(playerController);
 }
 
+let blocks = []
 let keys = {
     w: false,
     a: false,
     s: false,
     d: false
 }
+let map= [];
 
 function playerController() {
     //W: 87, A: 65, S: 83, D: 68
@@ -332,29 +349,50 @@ function renderAllShapes(useSliderValues = true) {
 
     gl.uniformMatrix4fv(u_GlobalRotationMatrix, false, glob.elements);
 
-    let ground = new Cube();
-    ground.matrix = new Matrix4();
-    ground.matrix.setTranslate(0, -0.5, 0);
-    ground.matrix.scale(10, 1, 10);
-    ground.textureArray = STONE_BLOCK;
-    ground.useColor = false;
-    ground.render();
+    // let ground = new Cube();
+    // ground.matrix = new Matrix4();
+    // ground.matrix.setTranslate(0, -0.5, 0);
+    // ground.matrix.scale(10, 1, 10);
+    // ground.textureArray = STONE_BLOCK;
+    // ground.useColor = false;
+    // ground.renderFast();
 
-    let c = new Cube();
-    c.textureArray = GRASS_BLOCK;
-    c.render();
+    // let c = new Cube();
+    // c.textureArray = GRASS_BLOCK;
+    // c.renderFast();
 
-    let coloredCube = new Cube();
-    coloredCube.useColor = true;
-    coloredCube.color = [0, 0, 1, 1];
-    coloredCube.matrix.setTranslate(-0.75, 0, 0);
-    coloredCube.useColor = true;
-    coloredCube.render();
+    // let coloredCube = new Cube();
+    // coloredCube.useColor = true;
+    // coloredCube.color = [0, 0, 1, 1];
+    // coloredCube.matrix.setTranslate(-0.75, 0, 0);
+    // coloredCube.useColor = true;
+    // coloredCube.render();
 
     let skybox = new Cube();
     skybox.textureArray = SKYBOX;
     skybox.matrix.scale(50, 50, 50);
-    skybox.render()
+    skybox.renderFast()
+
+    // for (let x = 0; x < 32; x++) {
+    //     for (let y = 0; y < 32; y++) {
+
+    //         let z = map[x][y].toFixed(1) * 10;
+    //         for (let i = 0; i < z; i++) {
+    //             let block = new Cube();
+    //             block.textureArray = GRASS_BLOCK;
+    //             block.matrix.setTranslate(x, i, y);
+    //             block.renderFast();
+    //         }
+
+    //     }
+    // }
+
+    for (let i = 0; i < blocks.length; i++) {
+        blocks[i].renderFast();
+    }
+
+    
+
 
     
 }
