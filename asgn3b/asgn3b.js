@@ -39,37 +39,45 @@ var FSHADER_SOURCE = `
     // }
 
 
-    uniform int textureID;
+    //uniform float texID;
     void main() {
-        if (textureID == -2) {
-            gl_FragColor = u_FragColor;
-        } else if (textureID == -1) {
-            gl_FragColor = vec4(v_UV, 1.0, 1.0);
-        } else if (textureID == 0) {
-            gl_FragColor = texture2D(u_Sampler0, v_UV);
-        } else if (textureID == 1) {
-            gl_FragColor = texture2D(u_Sampler1, v_UV);
-        } else if (textureID == 2) {
-            gl_FragColor = texture2D(u_Sampler2, v_UV);
-        } else if (textureID == 3) {
-            gl_FragColor = texture2D(u_Sampler3, v_UV);
-        } 
-        else if (textureID == 4) {
-            gl_FragColor = texture2D(u_Sampler4, v_UV);
-        } else if (textureID == 5) {
-            gl_FragColor = texture2D(u_Sampler5, v_UV);
-        } else if (textureID == 6) {
-            gl_FragColor = texture2D(u_Sampler6, v_UV);
-        } else if (textureID == 7) {
-            gl_FragColor = texture2D(u_Sampler7, v_UV);
-        } else if (textureID == 8) {
-            gl_FragColor = texture2D(u_Sampler8, v_UV);
-        } else if (textureID == 9) {
-            gl_FragColor = texture2D(u_Sampler9, v_UV);
-        }
-        else {
-            gl_FragColor = vec4(1, 0, 1, 1);
-        }
+        //int textureID = int(texID);
+        gl_FragColor = u_FragColor;
+
+        gl_FragColor = texture2D(u_Sampler0, v_UV);
+        
+
+        
+
+        // if (textureID == -2) {
+        //     gl_FragColor = u_FragColor;
+        // } else if (textureID == -1) {
+        //     gl_FragColor = vec4(v_UV, 1.0, 1.0);
+        // } else if (textureID == 0) {
+        //     gl_FragColor = texture2D(u_Sampler0, v_UV);
+        // } else if (textureID == 1) {
+        //     gl_FragColor = texture2D(u_Sampler1, v_UV);
+        // } else if (textureID == 2) {
+        //     gl_FragColor = texture2D(u_Sampler2, v_UV);
+        // } else if (textureID == 3) {
+        //     gl_FragColor = texture2D(u_Sampler3, v_UV);
+        // } 
+        // else if (textureID == 4) {
+        //     gl_FragColor = texture2D(u_Sampler4, v_UV);
+        // } else if (textureID == 5) {
+        //     gl_FragColor = texture2D(u_Sampler5, v_UV);
+        // } else if (textureID == 6) {
+        //     gl_FragColor = texture2D(u_Sampler6, v_UV);
+        // } else if (textureID == 7) {
+        //     gl_FragColor = texture2D(u_Sampler7, v_UV);
+        // } else if (textureID == 8) {
+        //     gl_FragColor = texture2D(u_Sampler8, v_UV);
+        // } else if (textureID == 9) {
+        //     gl_FragColor = texture2D(u_Sampler9, v_UV);
+        // }
+        // else {
+        //     gl_FragColor = vec4(1, 0, 1, 1);
+        // }
         
     }`;
 
@@ -83,7 +91,7 @@ let globalRotx, globalRoty, globalRotz;
 let xSlider, ySlider, zSlider;
 let debugX, debugY, debugZ;
 let fpsCounter;
-let mouseDelta;
+let mouseDelta = new Vector3();
 let camera;
 
 function setupWebGL() {
@@ -127,11 +135,11 @@ function connectVariablesToGLSL() {
         return;            
     }
 
-    u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
-    if (!u_FragColor) {
-        console.log('Failed to get the storage location of u_FragColor');
-        return;
-    }
+    // u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
+    // if (!u_FragColor) {
+    //     console.log('Failed to get the storage location of u_FragColor');
+    //     return;
+    // }
 
     a_UV = gl.getAttribLocation(gl.program, 'a_UV');
     if (!a_UV) {
@@ -145,7 +153,7 @@ function connectVariablesToGLSL() {
     //     return;
     // }
 
-    for (let i = 0; i <= 9; i++) {
+    for (let i = 0; i <= 0; i++) {
         let sampler = gl.getUniformLocation(gl.program, `u_Sampler${i}`);
         if (!sampler) {
             console.log(`Failed to get storage location of u_Sampler${i}`);
@@ -154,11 +162,11 @@ function connectVariablesToGLSL() {
         u_Samplers.push(sampler);
     }
 
-    textureID = gl.getUniformLocation(gl.program, 'textureID');
-    if (!textureID) {
-        console.log('failed to get storage location of textureID');
-        return;
-    }
+    // textureID = gl.getUniformLocation(gl.program, 'texID');
+    // if (!textureID) {
+    //     console.log('failed to get storage location of textureID');
+    //     return;
+    // }
 
     u_ProjectionMatrix = gl.getUniformLocation(gl.program, 'u_ProjectionMatrix');
     if (!u_ProjectionMatrix) {
@@ -201,17 +209,21 @@ function main() {
     gl.uniformMatrix4fv(u_GlobalRotationMatrix, false, glob.elements);
 
     document.addEventListener('keydown', function(ev) {
-        if (ev.keyCode == 87) keys.w = true;
+             if (ev.keyCode == 87) keys.w = true;
         else if (ev.keyCode == 83) keys.s = true;
         else if (ev.keyCode == 65) keys.a = true;
         else if (ev.keyCode == 68) keys.d = true;
+        else if (ev.keyCode == 32) keys.space = true;
+        else if (ev.keyCode == 16) keys.lshift = true;
     });
 
     document.addEventListener('keyup', function(ev) {
-        if (ev.keyCode == 87) keys.w = false;
+             if (ev.keyCode == 87) keys.w = false;
         else if (ev.keyCode == 83) keys.s = false;
         else if (ev.keyCode == 65) keys.a = false;
         else if (ev.keyCode == 68) keys.d = false;
+        else if (ev.keyCode == 32) keys.space = false;
+        else if (ev.keyCode == 16) keys.lshift = false;
     });
 
     // canvas.addEventListener("click", async () => {
@@ -223,11 +235,18 @@ function main() {
         let x = ev.movementX;
         let y = ev.movementY;
         //console.log(`X: ${x}, Y: ${y}`);
-        mouseDelta = new Vector3([x, y, 1]).normalize();
-        mouseDelta.z = 1;
+        //if (!mouseDelta) {
+            mouseDelta = new Vector3([x, y, 1]).normalize();
+        // } else {
+        //     mouseDelta.x = x;
+        //     mouseDelta.y = y;
+        //     mouseDelta = mouseDelta.normalize();
+        //     console.log(mouseDelta);
+        // }
 
         renderAllShapes();
-        mouseDelta = new Vector3([0, 0, 0]);
+        mouseDelta.x = 0;
+        mouseDelta.y = 0;
 
     })
 
@@ -236,31 +255,34 @@ function main() {
         canvas.requestPointerLock();
     });
 
-    //console.log(Noise.GenerateNoiseMap(32, 32, 0.1, 4, 0.5, 2));
-    map = Noise.GenerateNoiseMap(32, 32, 0.1, 4, 0.5, 2);
-    for (let x = 0; x < 32; x++) {
-        for (let y = 0; y < 32; y++) {
+    // gl.enable(gl.CULL_FACE);
+    // gl.cullFace(gl.BACK);
 
-            let z = map[x][y].toFixed(1) * 10;
-            //for (let i = 0; i < z; i++) {
-            let block = new Cube();
-            block.textureArray = GRASS_BLOCK;
-            block.matrix.setTranslate(x, z, y);
-            blocks.push(block);
-            //}
 
-        }
-    }
+    chunk = new Chunk(16, 16, new Vector3([0, 0, 0]));
+    chunk2 = new Chunk(16, 16, new Vector3([1, 0, 0]));
+    chunk3 = new Chunk(16, 16, new Vector3([0, 1, 0]));
+    chunk4 = new Chunk(16, 16, new Vector3([1, 1, 0]));
+
+    skybox = new Cube("skybox");
+
+    debugX = document.getElementById("debugX");
+    debugY = document.getElementById("debugY");
+    debugZ = document.getElementById("debugZ");
 
     requestAnimationFrame(playerController);
 }
+
+let chunk, chunk2, chunk3, chunk4, skybox;
 
 let blocks = []
 let keys = {
     w: false,
     a: false,
     s: false,
-    d: false
+    d: false,
+    space: false,
+    lshift: false
 }
 let map= [];
 
@@ -278,9 +300,23 @@ function playerController() {
         camera.moveLeft(speed);
     } else if (keys.d) {
         camera.moveRight(speed);
+    } else if (keys.space) {
+        camera.moveUp(speed);
+    } else if (keys.lshift) {
+        camera.moveDown(speed);
     }
 
     renderAllShapes();
+    if (!lastCalledTime) {
+        lastCalledTime = Date.now();
+        fps = 0;
+    } else {
+        delta = (Date.now() - lastCalledTime)/1000;
+        lastCalledTime = Date.now();
+        fps = 1/delta;
+    }
+
+    fpsCounter.innerText = "FPS: " + fps.toFixed(3);
     requestAnimationFrame(playerController);
 }
 
@@ -295,21 +331,21 @@ function convertCoordinatesToGL(ev) {
 }
 
 let lastCalledTime;
-const GRASS_BLOCK = [2, 2, 2, 2, 1, 0];
-const STONE_BLOCK = [3, 3, 3, 3, 3, 3];
-const SKYBOX = [4, 7, 6, 8, 9, 5];
+// const GRASS_BLOCK = [2, 2, 2, 2, 1, 0];
+// const STONE_BLOCK = [3, 3, 3, 3, 3, 3];
+// const SKYBOX = [4, 7, 6, 8, 9, 5];
 
 const sensitivity = 6;
+
+let globalVertexArray = [];
+let globalUVArray = [];
 
 function renderAllShapes(useSliderValues = true) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    debugX = document.getElementById("debugX");
-    debugY = document.getElementById("debugY");
-    debugZ = document.getElementById("debugZ");
 
     if (mouseDelta && document.pointerLockElement === canvas) {
-        const EPSILON = 0.001;
+        //const EPSILON = 0.001;
 
         //Left and right
         let m = new Matrix4();
@@ -344,21 +380,19 @@ function renderAllShapes(useSliderValues = true) {
     if (useSliderValues) {
         glob.setRotate(-xSlider.value, 1, 0, 0);
         glob.rotate(ySlider.value, 0, 1, 0);
-        glob.rotate(zSlider.value, 0, 0, 1);        
+        glob.rotate(zSlider.value, 0, 0, 1);
     }
 
     gl.uniformMatrix4fv(u_GlobalRotationMatrix, false, glob.elements);
 
-    // let ground = new Cube();
+    // let ground = new Cube("stone_block");
     // ground.matrix = new Matrix4();
     // ground.matrix.setTranslate(0, -0.5, 0);
     // ground.matrix.scale(10, 1, 10);
-    // ground.textureArray = STONE_BLOCK;
-    // ground.useColor = false;
+    // // ground.useColor = false;
     // ground.renderFast();
 
-    // let c = new Cube();
-    // c.textureArray = GRASS_BLOCK;
+    // let c = new Cube("grass_block");
     // c.renderFast();
 
     // let coloredCube = new Cube();
@@ -368,28 +402,42 @@ function renderAllShapes(useSliderValues = true) {
     // coloredCube.useColor = true;
     // coloredCube.render();
 
-    let skybox = new Cube();
-    skybox.textureArray = SKYBOX;
-    skybox.matrix.scale(50, 50, 50);
+    
+    skybox.matrix.setTranslate(camera.eye.x, camera.eye.y, camera.eye.z);
+    skybox.matrix.scale(100, 100, 100);
     skybox.renderFast()
 
-    // for (let x = 0; x < 32; x++) {
-    //     for (let y = 0; y < 32; y++) {
+    // for (let x = 0; x < 16; x++) {
+    //     for (let y = 0; y < 16; y++) {
 
     //         let z = map[x][y].toFixed(1) * 10;
-    //         for (let i = 0; i < z; i++) {
-    //             let block = new Cube();
-    //             block.textureArray = GRASS_BLOCK;
+    //         for (let i = 0; i < z - 1; i++) {
+    //             let block = new Cube("stone_block");
     //             block.matrix.setTranslate(x, i, y);
     //             block.renderFast();
     //         }
 
+    //         let block = new Cube("grass_block");
+    //         block.matrix.setTranslate(x, z - 1, y);
+    //         block.renderFast();
+
     //     }
     // }
+    
+    chunk.displayChunk();
 
-    for (let i = 0; i < blocks.length; i++) {
-        blocks[i].renderFast();
-    }
+    
+    chunk2.displayChunk();
+
+    
+    chunk3.displayChunk();
+
+    
+    chunk4.displayChunk();
+
+    // for (let i = 0; i < blocks.length; i++) {
+    //     blocks[i].renderFast();
+    // }
 
     
 
@@ -433,55 +481,5 @@ function countFPS() {
 
     fpsCounter.innerText = "FPS: " + fps.toFixed(3);
 
-    requestAnimationFrame(countFPS);
-}
-
-
-//skybox texture from https://opengameart.org/content/sky-box-sunny-day
-const texturePath = 'textures/';
-const textures = [
-    'dirt.png',
-    'grass_block_top.png',
-    'grass_block_side.png',
-    'stone.png',
-    'skybox1.png',
-    'skybox2.png',
-    'skybox3.png',
-    'skybox4.png',
-    'skybox5.png',
-    'skybox6.png',
-]
-function initTextures(n) {
-    let numLoadedTextures = 0;
-
-    for (let i = 0; i < textures.length; i++) {
-        let img = new Image();
-
-        img.onload = function() {
-            loadTexture(n, img, i);
-            numLoadedTextures++;
-
-            if (numLoadedTextures == textures.length)
-                renderAllShapes();
-        }
-    
-        img.src = texturePath + textures[i];
-    }
-    
-    return true;
-}
-
-function loadTexture(n, img, samplerID) {
-    let texture = gl.createTexture();
-
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
-    gl.activeTexture(gl.TEXTURE0 + samplerID);
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
-    gl.uniform1i(u_Samplers[samplerID], samplerID);
-
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, n);
+    //requestAnimationFrame(countFPS);
 }

@@ -4,7 +4,7 @@ class Noise {
         //https://github.com/SebLague/Procedural-Landmass-Generation/blob/master/Proc%20Gen%20E03/Assets/Scripts/Noise.cs
     }
 
-    static GenerateNoiseMap(mapWidth, mapHeight, scale, octaves, persistence, lacunarity) {
+    static GenerateNoiseMap(mapWidth, mapHeight, scale, octaves, persistence, lacunarity, offset) {
         let map = [];
         for (let i = 0; i < mapHeight; i++)
             map.push([]);
@@ -22,9 +22,9 @@ class Noise {
                 let noiseHeight = 0;
 
                 for (let i = 0; i < octaves; i++) {
-                    let sampleX = x / scale * frequency;
-                    
-                    let sampleY = y / scale * frequency;
+                    let sampleX = (x + (offset.x * mapWidth)) / scale * frequency;
+                    let sampleY = (y + (offset.y * mapHeight)) / scale * frequency;
+
                     let perlinVal = perlin.get(sampleX + 0.1, sampleY + 0.1);
                     //perlinVal = (perlinVal + 1) / 2; //to bring it to the range 0 to 1
                     noiseHeight += perlinVal * amplitude;

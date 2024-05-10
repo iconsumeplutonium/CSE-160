@@ -31,7 +31,7 @@
                     <input type="range" min="0" max="360" value="0" class="slider" id="xSlider" oninput="renderAllShapes()">
                     <button onclick="resetSlider('xSlider')">Reset</button> <br>
                     Y:
-                    <input type="range" min="0" max="360" value="125" class="slider" id="ySlider" oninput="renderAllShapes()">
+                    <input type="range" min="0" max="360" value="0" class="slider" id="ySlider" oninput="renderAllShapes()">
                     <button onclick="resetSlider('ySlider')">Reset</button> <br>
                     Z:
                     <input type="range" min="0" max="360" value="0" class="slider" id="zSlider" oninput="renderAllShapes()">
@@ -63,11 +63,13 @@
         <script src="lib/cuon-matrix.js"></script>
         <!-- <script src="lib/perlin.js"></script> -->
         <script src="lib/Noise.js"></script> -->
-        <script src='http://joeiddon.github.io/perlin/perlin.js'></script>
+        <script src='lib/perlin.js'></script>
+        <script src="TextureAtlasManager.js"></script>
         <script src="asgn3b.js"></script>
         <script src="Cube.js"></script>
         <script src="Triangle.js"></script>
         <script src="Camera.js"></script>
+        <script src="Chunk.js"></script>
         <br><br>
 
         <!-- https://github.com/josephg/noisejs -->

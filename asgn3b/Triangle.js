@@ -86,7 +86,9 @@ function drawTrianglesUV(vertices, uv) {
     gl.drawArrays(gl.TRIANGLES, 0, 3);
 }
 
-function drawTrianglesUV_OneBuffer(vertices, textures) {
+function drawTrianglesUV_OneBuffer(vertices, uvs) {
+    //console.log(uvs);
+
     let vertexBuffer = gl.createBuffer();
     if (!vertexBuffer) {
         console.log('Failed to create buffer obj');
@@ -94,39 +96,36 @@ function drawTrianglesUV_OneBuffer(vertices, textures) {
     }
 
     let verticesF32 = new Float32Array(vertices);
-    const FSIZE = verticesF32.BYTES_PER_ELEMENT;
-
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, verticesF32, gl.DYNAMIC_DRAW);
-
-    gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, FSIZE * 5, 0);
+    gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(a_Position);
 
-    gl.vertexAttribPointer(a_UV, 2, gl.FLOAT, false, FSIZE * 5, FSIZE * 3);
+
+    let uvBuffer = gl.createBuffer();
+    if (!uvBuffer) {
+        console.log('failed to make uv buffer obj');
+        return -1;
+    }
+    let uvsF32 = new Float32Array(uvs);
+    gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, uvsF32, gl.DYNAMIC_DRAW);
+    gl.vertexAttribPointer(a_UV, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(a_UV);
 
-    // gl.vertexAttribPointer(textureID, 1, gl.FLOAT, false, FSIZE * 6, FSIZE * 5);
-    // gl.enableVertexAttribArray(textureID);
-
-
-
-    //send textures
-    // let textureBuffer = gl.createBuffer();
-    // if (!textureBuffer) {
-    //     console.log('Failed to create texture buffer obj');
-    //     return;
+    
+    // let matrixBuffer = gl.createBuffer();
+    // if (!matrixBuffer) {
+    //     console.log('failed to make matrix buffer obj');
+    //     return -1
     // }
+    // let matricesF32 = new Float32Array(matrices);
+    // gl.bindBuffer(gl.ARRAY_BUFFER, matrixBuffer);
+    // gl.bufferData(gl.ARRAY_BUFFER, matricesF32, gl.DYNAMIC_DRAW);
+    // gl.vertexAttribPointer(u_ModelMatrix, 16, gl.FLOAT, false, 0, 0);
+    // gl.enableVertexAttribArray(u_ModelMatrix);
 
-    //console.log(textures);
 
-    // let texturesF32 = new Int32Array(textures);
-    // const FSIZE2 = texturesF32.BYTES_PER_ELEMENT;
 
-    // gl.bindBuffer(gl.ARRAY_BUFFER, textureBuffer);
-    // gl.bufferData(gl.ARRAY_BUFFER, texturesF32, gl.DYNAMIC_DRAW);
-
-    // gl.vertexAttribPointer(textureID, 1, gl.INT, false, 0, 0);
-    // gl.enableVertexAttribArray(texturesF32);
-
-    gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 5);
+    gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 3);
 }

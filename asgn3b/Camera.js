@@ -1,8 +1,8 @@
 class Camera {
     constructor(fov) {
         this.fov = fov;
-        this.eye = new Vector3([0, 5, 3]);
-        this.at = new Vector3([0, 0, 0]);
+        this.eye = new Vector3([0, 40, 3]);
+        this.at = new Vector3([7, 0, 10]);
         this.up = new Vector3([0, 1, 0]);
 
         this.viewMatrix = new Matrix4().setIdentity();
@@ -56,6 +56,20 @@ class Camera {
 
         camera.eye = camera.eye.add(rightVector);    
         camera.at = camera.at.add(rightVector);
+    }
+
+    moveUp(speed) {
+        let upVector = this.up.mul(speed);
+
+        camera.eye = camera.eye.add(upVector);
+        camera.at = camera.at.add(upVector);
+    }
+
+    moveDown(speed) {
+        let upVector = this.up.mul(speed);
+
+        camera.eye = camera.eye.sub(upVector);
+        camera.at = camera.at.sub(upVector);
     }
 
 
