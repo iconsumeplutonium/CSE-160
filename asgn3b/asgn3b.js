@@ -88,7 +88,7 @@ let u_GlobalRotationMatrix, u_ModelMatrix, u_ProjectionMatrix, u_ViewMatrix;
 let u_Sampler0, u_Sampler1, u_Sampler2, u_Sampler3;
 let u_Samplers = [];
 let globalRotx, globalRoty, globalRotz;
-let xSlider, ySlider, zSlider;
+//let xSlider, ySlider, zSlider;
 let debugX, debugY, debugZ;
 let fpsCounter;
 let mouseDelta = new Vector3();
@@ -193,9 +193,9 @@ function main() {
 
     //adding a mousemove event listener causes the cube to only start rendering after like 20 seconds
     //doing it this method causes no delay
-    xSlider = document.getElementById("xSlider");
-    ySlider = document.getElementById("ySlider");
-    zSlider = document.getElementById("zSlider");
+    // xSlider = document.getElementById("xSlider");
+    // ySlider = document.getElementById("ySlider");
+    // zSlider = document.getElementById("zSlider");
 
     fpsCounter = document.getElementById("fps");
 
@@ -377,11 +377,11 @@ function renderAllShapes(useSliderValues = true) {
         camera.applyViewMatrix();
     } 
 
-    if (useSliderValues) {
-        glob.setRotate(-xSlider.value, 1, 0, 0);
-        glob.rotate(ySlider.value, 0, 1, 0);
-        glob.rotate(zSlider.value, 0, 0, 1);
-    }
+    // if (useSliderValues) {
+    //     glob.setRotate(-xSlider.value, 1, 0, 0);
+    //     glob.rotate(ySlider.value, 0, 1, 0);
+    //     glob.rotate(zSlider.value, 0, 0, 1);
+    // }
 
     gl.uniformMatrix4fv(u_GlobalRotationMatrix, false, glob.elements);
 
