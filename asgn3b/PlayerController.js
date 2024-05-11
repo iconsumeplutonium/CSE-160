@@ -7,11 +7,38 @@ let keys = {
     lshift: false
 }
 
+let inventory = [
+    "grass_block",
+    "dirt",
+    "stone_block",
+    "cobblestone",
+    "sand",
+    "gravel",
+    "oak_planks",
+    "bedrock",
+    "bricks"
+]
+let selectedSlot = 0;
+let selectedSlotDisplayText;
+
+function selectNext() {
+    selectedSlot++;
+    if (selectedSlot >= inventory.length)
+        selectedSlot = 0;
+
+    selectedSlotDisplayText.innerText = `Selected Block: ${inventory[selectedSlot]}`;
+}
+
+function selectPrev() {
+    selectedSlot--;
+    if (selectedSlot < 0)
+        selectedSlot = inventory.length - 1;
+
+    selectedSlotDisplayText.innerText = `Selected Block: ${inventory[selectedSlot]}`;
+}
+
 let lastCalledTime, delta, fps;
 function playerController() {
-    //W: 87, A: 65, S: 83, D: 68
-    //Q 81, E 69
-
     const speed = 0.1;
 
     if (keys.w) {

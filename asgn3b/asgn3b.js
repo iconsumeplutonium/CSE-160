@@ -201,6 +201,8 @@ function main() {
     // xSlider = document.getElementById("xSlider");
     // ySlider = document.getElementById("ySlider");
     // zSlider = document.getElementById("zSlider");
+    selectedSlotDisplayText = document.getElementById("selectedBlock");
+    selectedSlotDisplayText.innerText = `Selected Block: ${inventory[selectedSlot]}`;
 
     fpsCounter = document.getElementById("fps");
 
@@ -257,9 +259,8 @@ function main() {
         canvas.requestPointerLock();
 
         if (document.pointerLockElement === canvas) {
-            //calculate the chunk coordinate of camera.at
             let chunkCoord = new Vector3([Math.floor(camera.at.x / 16), Math.floor(camera.at.z / 16), 0]);
-            console.log(`Real pos: (${camera.at.x}, ${camera.at.y}, ${camera.at.z}), Chunk: ${chunkCoord.toString()}`);
+            //console.log(`Real pos: (${camera.at.x}, ${camera.at.y}, ${camera.at.z}), Chunk: ${chunkCoord.toString()}`);
 
             //get the chunk itself
             //if camera.at is not in a valid chunk, return
@@ -275,16 +276,43 @@ function main() {
             let chunkSpaceCoordY = Math.round(camera.at.y);
             let chunkSpaceCoordZ = Math.round(camera.at.z - (chunk.offset.y * chunk.chunkHeight));
 
-            console.log(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ);
-            chunk.addOrModifyBlock(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ, "stone_block");
+            //console.log(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ);
+            chunk.deleteBlock(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ);
             chunks.set(chunk.offset.toString(), chunk);
-        }
+        }        
     });
 
-    canvas.addEventListener('mousedown', function() {
-        //if (document.pointerLockElement === canvas) {
-            console.log('rigth click');
-        //}
+    canvas.addEventListener('mousedown', function(event) {
+        if (document.pointerLockElement === canvas && event.which === 3) {
+            //calculate the chunk coordinate of camera.at
+            let chunkCoord = new Vector3([Math.floor(camera.at.x / 16), Math.floor(camera.at.z / 16), 0]);
+            //console.log(`Real pos: (${camera.at.x}, ${camera.at.y}, ${camera.at.z}), Chunk: ${chunkCoord.toString()}`);
+
+            //get the chunk itself
+            //if camera.at is not in a valid chunk, return
+            let chunk;
+            try {
+                chunk = chunks.get(chunkCoord.toString());
+            } catch (e) {
+                return;
+            }
+            
+            //convert world space coordinate to chunk space coordinate
+            let chunkSpaceCoordX = Math.round(camera.at.x - (chunk.offset.x * chunk.chunkWidth));
+            let chunkSpaceCoordY = Math.round(camera.at.y);
+            let chunkSpaceCoordZ = Math.round(camera.at.z - (chunk.offset.y * chunk.chunkHeight));
+
+            //console.log(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ);
+            chunk.addOrModifyBlock(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ, inventory[selectedSlot]);
+            chunks.set(chunk.offset.toString(), chunk);
+        }
+    })
+
+    canvas.addEventListener('wheel', function(event) {
+        if (event.deltaY < 0)
+            selectPrev();
+        else
+            selectNext();
     })
 
     // gl.enable(gl.CULL_FACE);
@@ -317,10 +345,6 @@ let chunks = new Map();
 let blocks = []
 let map= [];
 
-// const GRASS_BLOCK = [2, 2, 2, 2, 1, 0];
-// const STONE_BLOCK = [3, 3, 3, 3, 3, 3];
-// const SKYBOX = [4, 7, 6, 8, 9, 5];
-
 const sensitivity = 6;
 
 let globalVertexArray = [];
@@ -331,7 +355,7 @@ let crosshairCube;
 function renderAllShapes(useSliderValues = true) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-
+    //only if mouseDelta is declared and the canvas is selected
     if (mouseDelta && document.pointerLockElement === canvas) {
         //const EPSILON = 0.001;
 
@@ -397,6 +421,7 @@ function renderAllShapes(useSliderValues = true) {
 
     crosshairCube.matrix.setTranslate(camera.at.x, camera.at.y, camera.at.z);
     crosshairCube.matrix.scale(0.1, 0.1, 0.1);
+    crosshairCube.texture = GetUVsForTexture(inventory[selectedSlot]);
     crosshairCube.renderFast();
 
     // for (let x = 0; x < 16; x++) {

@@ -3,6 +3,7 @@ class Cube {
         this.color = null;
         this.matrix = new Matrix4();
         this.coordinatesInChunk = null;
+        this.isAir = false; //if true, this block is skipped in chunk rendering (represents a deleted block)
 
         let cubeSize = 1;
         this.coordinates = [
@@ -106,6 +107,9 @@ class Cube {
     }
     
     renderFast() {
+        if (this.isAir)
+            return;
+
         gl.uniformMatrix4fv(u_ModelMatrix, false, this.matrix.elements);
 
         // let bottomTriUV = [[0,0],  [0,1],  [1,0]];

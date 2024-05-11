@@ -11,6 +11,7 @@ class Chunk {
             this.voxelMap[i] = [];
         }
 
+        //im also pushing the subsurface stone layer into here because i cant be bothered making a new array for it
         this.playerCreatedBlocks = [];
 
         this.blockWorldPosOffset = new Vector3([this.offset.x * this.chunkWidth, this.offset.y * this.chunkHeight, 0]);
@@ -35,7 +36,7 @@ class Chunk {
                         let block = new Cube("stone_block");
                         block.matrix.setTranslate(this.blockWorldPosOffset.x + x, z - 2, this.blockWorldPosOffset.y + y);
                         block.coordinatesInChunk = new Vector3([x, z - 2, y]);
-                        this.voxelMap.push(block);
+                        this.playerCreatedBlocks.push(block);
                         break;
                     }
                 }
@@ -93,14 +94,24 @@ class Chunk {
     addOrModifyBlock(x, y, z, blockType) {
         //case 1: block already exists, located in voxelMap
         if (this.voxelMap[x][z].coordinatesInChunk.y == y) {
-            this.voxelMap[x][z].texture = GetUVsForTexture(blockType);
+            
+            let c = new Cube(blockType);
+            c.matrix.setTranslate(this.blockWorldPosOffset.x + x, y, this.blockWorldPosOffset.y + z);
+            c.coordinatesInChunk = new Vector3([x, y, z]);
+
+            this.voxelMap[x][z] = c;
             return;
         }
         
         //case 2: block already exists, located in playerCreatedBlocks
         for (let i = 0; i < this.playerCreatedBlocks.length; i++) {
             if (this.playerCreatedBlocks[i].coordinatesInChunk.equals([x, y, z])) {
-                this.playerCreatedBlocks[i].texture = GetUVsForTexture(blockType);
+
+                let c = new Cube(blockType);
+                c.matrix.setTranslate(this.blockWorldPosOffset.x + x, y, this.blockWorldPosOffset.y + z);
+                c.coordinatesInChunk = new Vector3([x, y, z]);
+
+                this.playerCreatedBlocks[i] = c;
                 return;
             }
         }
@@ -113,6 +124,18 @@ class Chunk {
     }
 
     deleteBlock(x, y, z) {
+        //check playerCreatedBlocks
+        for (let i = 0; i < this.playerCreatedBlocks.length; i++) {
+            if (this.playerCreatedBlocks[i].coordinatesInChunk.equals([x, y, z])) {
+                this.playerCreatedBlocks.splice(i, 1);
+                return;
+            }
+        }
 
+        //check voxel map
+        if (this.voxelMap[x][z].coordinatesInChunk.y == y) {
+            this.voxelMap[x][z].isAir = true;
+            return;
+        }
     }
 }

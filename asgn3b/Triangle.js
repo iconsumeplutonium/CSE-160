@@ -128,5 +128,8 @@ function drawTrianglesUV_OneBuffer(vertices, uvs) {
 
 
     gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 3);
-    //gl.drawArraysInstanced(gl.TRIANGLES, 0, vertices.length / 3, 3);
+
+    //without this, js gc would cause massive stutters of up to 2 seconds
+    gl.deleteBuffer(vertexBuffer);
+    gl.deleteBuffer(uvBuffer);
 }
