@@ -254,11 +254,11 @@ function main() {
         mouseDelta.y = 0;
     })
 
-    canvas.addEventListener('click', function() {
+    canvas.addEventListener('click', function(event) {
         canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
         canvas.requestPointerLock();
 
-        if (document.pointerLockElement === canvas) {
+        if (event.which === 1 && document.pointerLockElement === canvas) {
             let chunkCoord = new Vector3([Math.floor(camera.at.x / 16), Math.floor(camera.at.z / 16), 0]);
             //console.log(`Real pos: (${camera.at.x}, ${camera.at.y}, ${camera.at.z}), Chunk: ${chunkCoord.toString()}`);
 
