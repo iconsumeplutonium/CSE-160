@@ -87,6 +87,7 @@ let a_Position, a_Color, a_UV, textureID, u_FragColor;
 let u_GlobalRotationMatrix, u_ModelMatrix, u_ProjectionMatrix, u_ViewMatrix;
 let u_Sampler0, u_Sampler1, u_Sampler2, u_Sampler3;
 let u_Samplers = [];
+let instancingExtension;
 let globalRotx, globalRoty, globalRotz;
 //let xSlider, ySlider, zSlider;
 let debugX, debugY, debugZ;
@@ -178,7 +179,13 @@ function connectVariablesToGLSL() {
     if (!u_ViewMatrix) {
         console.log('failed to get storage location of u_ViewMatrix');
         return;
-    }    
+    }
+
+    instancingExtension = gl.getExtension("ANGLE_instanced_arrays");
+    if (!instancingExtension) {
+        console.log('failed to get ANGLED_instanced_arrays extension');
+        return;
+    }
 
     
 }
@@ -191,8 +198,6 @@ function main() {
 
     camera = new Camera(90);
 
-    //adding a mousemove event listener causes the cube to only start rendering after like 20 seconds
-    //doing it this method causes no delay
     // xSlider = document.getElementById("xSlider");
     // ySlider = document.getElementById("ySlider");
     // zSlider = document.getElementById("zSlider");
@@ -226,10 +231,6 @@ function main() {
         else if (ev.keyCode == 16) keys.lshift = false;
     });
 
-    // canvas.addEventListener("click", async () => {
-    //     await canvas.requestPointerLock();
-    //   });
-
     document.addEventListener('mousemove', function(ev) {
         //let [x, y] = convertCoordinatesToGL(ev);
         let x = ev.movementX;
@@ -244,16 +245,47 @@ function main() {
         //     console.log(mouseDelta);
         // }
 
-        renderAllShapes();
+        if (document.pointerLockElement === canvas)
+            renderAllShapes();
+
         mouseDelta.x = 0;
         mouseDelta.y = 0;
-
     })
 
     canvas.addEventListener('click', function() {
         canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
         canvas.requestPointerLock();
+
+        if (document.pointerLockElement === canvas) {
+            //calculate the chunk coordinate of camera.at
+            let chunkCoord = new Vector3([Math.floor(camera.at.x / 16), Math.floor(camera.at.z / 16), 0]);
+            console.log(`Real pos: (${camera.at.x}, ${camera.at.y}, ${camera.at.z}), Chunk: ${chunkCoord.toString()}`);
+
+            //get the chunk itself
+            //if camera.at is not in a valid chunk, return
+            let chunk;
+            try {
+                chunk = chunks.get(chunkCoord.toString());
+            } catch (e) {
+                return;
+            }
+            
+            //convert world space coordinate to chunk space coordinate
+            let chunkSpaceCoordX = Math.round(camera.at.x - (chunk.offset.x * chunk.chunkWidth));
+            let chunkSpaceCoordY = Math.round(camera.at.y);
+            let chunkSpaceCoordZ = Math.round(camera.at.z - (chunk.offset.y * chunk.chunkHeight));
+
+            console.log(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ);
+            chunk.addOrModifyBlock(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ, "stone_block");
+            chunks.set(chunk.offset.toString(), chunk);
+        }
     });
+
+    canvas.addEventListener('mousedown', function() {
+        //if (document.pointerLockElement === canvas) {
+            console.log('rigth click');
+        //}
+    })
 
     // gl.enable(gl.CULL_FACE);
     // gl.cullFace(gl.BACK);
@@ -264,73 +296,27 @@ function main() {
     chunk3 = new Chunk(16, 16, new Vector3([0, 1, 0]));
     chunk4 = new Chunk(16, 16, new Vector3([1, 1, 0]));
 
+    chunks.set(chunk.offset.toString(), chunk);
+    chunks.set(chunk2.offset.toString(), chunk2);
+    chunks.set(chunk3.offset.toString(), chunk3);
+    chunks.set(chunk4.offset.toString(), chunk4);
+
     skybox = new Cube("skybox");
+    crosshairCube = new Cube("stone_block")
 
     debugX = document.getElementById("debugX");
     debugY = document.getElementById("debugY");
     debugZ = document.getElementById("debugZ");
 
-    requestAnimationFrame(playerController);
+    playerController();
 }
 
 let chunk, chunk2, chunk3, chunk4, skybox;
+let chunks = new Map();
 
 let blocks = []
-let keys = {
-    w: false,
-    a: false,
-    s: false,
-    d: false,
-    space: false,
-    lshift: false
-}
 let map= [];
 
-function playerController() {
-    //W: 87, A: 65, S: 83, D: 68
-    //Q 81, E 69
-
-    const speed = 0.1;
-
-    if (keys.w) {
-        camera.moveForward(speed);
-    } else if (keys.s) {
-        camera.moveBackward(speed);
-    } else if (keys.a) {
-        camera.moveLeft(speed);
-    } else if (keys.d) {
-        camera.moveRight(speed);
-    } else if (keys.space) {
-        camera.moveUp(speed);
-    } else if (keys.lshift) {
-        camera.moveDown(speed);
-    }
-
-    renderAllShapes();
-    if (!lastCalledTime) {
-        lastCalledTime = Date.now();
-        fps = 0;
-    } else {
-        delta = (Date.now() - lastCalledTime)/1000;
-        lastCalledTime = Date.now();
-        fps = 1/delta;
-    }
-
-    fpsCounter.innerText = "FPS: " + fps.toFixed(3);
-    requestAnimationFrame(playerController);
-}
-
-function convertCoordinatesToGL(ev) {
-    var x = ev.clientX; 
-    var y = ev.clientY; 
-    var rect = ev.target.getBoundingClientRect();
-
-    x = ((x - rect.left) - canvas.width/2)/(canvas.width/2);
-    y = (canvas.height/2 - (y - rect.top))/(canvas.height/2);
-    return ([x, y]);
-}
-
-let lastCalledTime;
 // const GRASS_BLOCK = [2, 2, 2, 2, 1, 0];
 // const STONE_BLOCK = [3, 3, 3, 3, 3, 3];
 // const SKYBOX = [4, 7, 6, 8, 9, 5];
@@ -339,6 +325,8 @@ const sensitivity = 6;
 
 let globalVertexArray = [];
 let globalUVArray = [];
+
+let crosshairCube;
 
 function renderAllShapes(useSliderValues = true) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -405,7 +393,11 @@ function renderAllShapes(useSliderValues = true) {
     
     skybox.matrix.setTranslate(camera.eye.x, camera.eye.y, camera.eye.z);
     skybox.matrix.scale(100, 100, 100);
-    skybox.renderFast()
+    skybox.renderFast();
+
+    crosshairCube.matrix.setTranslate(camera.at.x, camera.at.y, camera.at.z);
+    crosshairCube.matrix.scale(0.1, 0.1, 0.1);
+    crosshairCube.renderFast();
 
     // for (let x = 0; x < 16; x++) {
     //     for (let y = 0; y < 16; y++) {
@@ -424,16 +416,20 @@ function renderAllShapes(useSliderValues = true) {
     //     }
     // }
     
-    chunk.displayChunk();
+    // chunk.displayChunk();
 
     
-    chunk2.displayChunk();
+    // chunk2.displayChunk();
 
     
-    chunk3.displayChunk();
+    // chunk3.displayChunk();
 
     
-    chunk4.displayChunk();
+    // chunk4.displayChunk();
+    chunks.forEach(chunk => {
+        chunk.displayChunk();
+    })
+
 
     // for (let i = 0; i < blocks.length; i++) {
     //     blocks[i].renderFast();
@@ -462,24 +458,4 @@ function resetSlider(name) {
     }
 
     renderAllShapes();
-}
-
-
-let lastTimeStamp = 0;
-let totalTime = 0;
-
-function countFPS() {
-    //fps counter code from https://www.growingwiththeweb.com/2017/12/fast-simple-js-fps-counter.html
-    if (!lastCalledTime) {
-        lastCalledTime = Date.now();
-        fps = 0;
-    } else {
-        delta = (Date.now() - lastCalledTime)/1000;
-        lastCalledTime = Date.now();
-        fps = 1/delta;
-    }
-
-    fpsCounter.innerText = "FPS: " + fps.toFixed(3);
-
-    //requestAnimationFrame(countFPS);
 }

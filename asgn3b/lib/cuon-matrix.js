@@ -166,6 +166,13 @@ class Vector3 {
 
 		return v;
     };
+
+    equals(other) {
+        if (Array.isArray(other))
+            return (this.x == other[0] && this.y == other[1] && this.z == other[2]);
+        else if (opt_src instanceof Vector3)
+            return (this.x == other.x && this.y == other.y && this.z == other.z);
+    }
 }
 
 class Vector4 {

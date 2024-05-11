@@ -2,6 +2,7 @@ class Cube {
     constructor(blockType) {
         this.color = null;
         this.matrix = new Matrix4();
+        this.coordinatesInChunk = null;
 
         let cubeSize = 1;
         this.coordinates = [
@@ -17,7 +18,7 @@ class Cube {
 
 
         this.texture = GetUVsForTexture(blockType);
-        this.useColor = false; //if true, uses texture array
+        this.useColor = false;
 
         this.allVerts = [];
 

@@ -128,4 +128,5 @@ function drawTrianglesUV_OneBuffer(vertices, uvs) {
 
 
     gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 3);
+    //gl.drawArraysInstanced(gl.TRIANGLES, 0, vertices.length / 3, 3);
 }

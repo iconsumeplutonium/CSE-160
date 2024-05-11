@@ -38,6 +38,9 @@ function GetUVsForTexture(block) {
             uvs = uvs.concat(extractSingularSquare(SKYBOX2));
 
             break;
+        
+        case "air":
+            break;
     }
 
     return uvs;
