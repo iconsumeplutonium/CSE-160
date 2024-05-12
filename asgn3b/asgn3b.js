@@ -18,66 +18,11 @@ var FSHADER_SOURCE = `
     varying vec2 v_UV;
 
     uniform vec4 u_FragColor;
-
     uniform sampler2D u_Sampler0;
-    uniform sampler2D u_Sampler1;
-    uniform sampler2D u_Sampler2;
-    uniform sampler2D u_Sampler3;
 
-    //skybox samplers
-    uniform sampler2D u_Sampler4;
-    uniform sampler2D u_Sampler5;
-    uniform sampler2D u_Sampler6;
-    uniform sampler2D u_Sampler7;
-    uniform sampler2D u_Sampler8;
-    uniform sampler2D u_Sampler9;
-
-
-    //uniform sampler2DArray skybox;
-    // else if (textureID >= 4 && textureID <= 9) {
-    //     gl_FragColor = texture2D(skybox, vec3(v_UV, textureID));
-    // }
-
-
-    //uniform float texID;
     void main() {
-        //int textureID = int(texID);
         gl_FragColor = u_FragColor;
-
         gl_FragColor = texture2D(u_Sampler0, v_UV);
-        
-
-        
-
-        // if (textureID == -2) {
-        //     gl_FragColor = u_FragColor;
-        // } else if (textureID == -1) {
-        //     gl_FragColor = vec4(v_UV, 1.0, 1.0);
-        // } else if (textureID == 0) {
-        //     gl_FragColor = texture2D(u_Sampler0, v_UV);
-        // } else if (textureID == 1) {
-        //     gl_FragColor = texture2D(u_Sampler1, v_UV);
-        // } else if (textureID == 2) {
-        //     gl_FragColor = texture2D(u_Sampler2, v_UV);
-        // } else if (textureID == 3) {
-        //     gl_FragColor = texture2D(u_Sampler3, v_UV);
-        // } 
-        // else if (textureID == 4) {
-        //     gl_FragColor = texture2D(u_Sampler4, v_UV);
-        // } else if (textureID == 5) {
-        //     gl_FragColor = texture2D(u_Sampler5, v_UV);
-        // } else if (textureID == 6) {
-        //     gl_FragColor = texture2D(u_Sampler6, v_UV);
-        // } else if (textureID == 7) {
-        //     gl_FragColor = texture2D(u_Sampler7, v_UV);
-        // } else if (textureID == 8) {
-        //     gl_FragColor = texture2D(u_Sampler8, v_UV);
-        // } else if (textureID == 9) {
-        //     gl_FragColor = texture2D(u_Sampler9, v_UV);
-        // }
-        // else {
-        //     gl_FragColor = vec4(1, 0, 1, 1);
-        // }
         
     }`;
 
@@ -89,13 +34,10 @@ let u_Sampler0, u_Sampler1, u_Sampler2, u_Sampler3;
 let u_Samplers = [];
 let instancingExtension;
 let globalRotx, globalRoty, globalRotz;
-//let xSlider, ySlider, zSlider;
-let debugX, debugY, debugZ;
-let fpsCounter;
+
 let mouseDelta = new Vector3();
 let camera;
 const chunkSize = 12;
-let cameraCoordDisplay, chunkCoordDisplay;
 let skybox = []
 
 function setupWebGL() {
@@ -203,12 +145,9 @@ function main() {
 
     camera = new Camera(90);
 
-    selectedSlotDisplayText = document.getElementById("selectedBlock");
-    selectedSlotDisplayText.innerText = `Selected Block: ${inventory[selectedSlot]}`;
-
-    fpsCounter = document.getElementById("fps");
-    cameraCoordDisplay = document.getElementById("worldCoords");
-    chunkCoordDisplay = document.getElementById("chunkCoords");
+    // fpsCounter = document.getElementById("fps");
+    // cameraCoordDisplay = document.getElementById("worldCoords");
+    // chunkCoordDisplay = document.getElementById("chunkCoords");
 
     initTextures(0);
 
@@ -263,7 +202,7 @@ function main() {
         canvas.requestPointerLock();
 
         let chunkCoord = convertWorldCoordToChunkCoord(camera.at);
-        console.log(`Real pos: (${camera.at.x}, ${camera.at.y}, ${camera.at.z}), Chunk: ${chunkCoord.toString()}`);
+        //console.log(`Real pos: (${camera.at.x}, ${camera.at.y}, ${camera.at.z}), Chunk: ${chunkCoord.toString()}`);
 
         //get the chunk itself
         //if camera.at is not in a valid chunk, return
@@ -272,12 +211,20 @@ function main() {
             return;
 
         //convert world space coordinate to chunk space coordinate
+        console.log(`${camera.at.x}, ${camera.at.z}`)
         let chunkSpaceCoordX = Math.round(camera.at.x - (chunk.offset.x * chunk.chunkWidth));
         let chunkSpaceCoordY = Math.round(camera.at.y);
         let chunkSpaceCoordZ = Math.round(camera.at.z - (chunk.offset.y * chunk.chunkHeight));
 
+        // if the chunk offset is 0, then chunkSpaceCoordX and Z can be greater than chunkSize
+        if (chunkSpaceCoordX >= chunkSize)
+            chunkSpaceCoordX = chunkSpaceCoordX % chunkSize;
 
-        console.log(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ);
+        if (chunkSpaceCoordZ >= chunkSize)
+            chunkSpaceCoordZ = chunkSpaceCoordZ % chunkSize;
+
+
+        //console.log(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ);
 
         if (document.pointerLockElement === canvas) {
             //left click (destroy block)
@@ -310,6 +257,7 @@ function main() {
         skybox[i] = new Cube("skybox");
 
     displaySkybox();
+    connectAllUIElements();
 
     playerController();
 }
@@ -359,10 +307,6 @@ function renderAllShapes(useSliderValues = true) {
     gl.uniformMatrix4fv(u_GlobalRotationMatrix, false, glob.elements);
 
     displaySkybox();
-    
-    // skybox.matrix.setTranslate(camera.eye.x, camera.eye.y, camera.eye.z);
-    // skybox.matrix.scale(100, 100, 100);
-    // skybox.renderFast();
 
     crosshairCube.matrix.setTranslate(camera.at.x, camera.at.y, camera.at.z);
     crosshairCube.matrix.scale(0.1, 0.1, 0.1);
@@ -403,23 +347,4 @@ function displaySkybox() {
 
     for (let i = 0; i <= 5; i++)
         skybox[i].renderFast();
-}
-
-function resetSlider(name) {
-    let angle = 0;
-    switch (name) {
-        case "xSlider":
-            xSlider.value = 21;
-            angle = 21;
-            break;
-        case "ySlider":
-            ySlider.value = 125;
-            angle = 125;
-            break;
-        default:
-            document.getElementById(name).value = 0;
-            break;
-    }
-
-    renderAllShapes();
 }

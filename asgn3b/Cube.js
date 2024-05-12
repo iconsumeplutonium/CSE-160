@@ -112,57 +112,37 @@ class Cube {
 
         gl.uniformMatrix4fv(u_ModelMatrix, false, this.matrix.elements);
 
-        // let bottomTriUV = [[0,0],  [0,1],  [1,0]];
-        // let topTriUV = [[1,0],  [0,1],  [1,1]];
+        //drawTrianglesUV_OneBuffer(this.allVerts, this.texture);
 
-        // let allVerts = [];
+        let vertexBuffer = gl.createBuffer();
+        if (!vertexBuffer) {
+            console.log('Failed to create buffer obj');
+            return -1;
+        }
 
-        //front
-        // if (this.useColor) {
-        //     gl.uniform4fv(u_FragColor, this.color);
-        //     gl.uniform1i(textureID, -2);
-        // } else
-        //     gl.uniform1i(textureID, this.textureArray[0]);
-        // allVerts = allVerts.concat(this.addTri(0, 2, 4));
-        // allVerts = allVerts.concat(this.addTri(4, 2, 6));
-        // //allVerts.push(this.textureArray[0]);
+        let verticesF32 = new Float32Array(this.allVerts);
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, verticesF32, gl.DYNAMIC_DRAW);
+        gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(a_Position);
 
-        // //right
-        // // if (!this.useColor)
-        // //     gl.uniform1i(textureID, this.textureArray[1]);
-        // allVerts = allVerts.concat(this.addTri(4, 6, 5));
-        // allVerts = allVerts.concat(this.addTri(5, 6, 7));
-        // //allVerts.push(this.textureArray[1]);
 
-        // //back
-        // // if (!this.useColor)
-        // //     gl.uniform1i(textureID, this.textureArray[2]);
-        // allVerts = allVerts.concat(this.addTri(5, 7, 1));
-        // allVerts = allVerts.concat(this.addTri(1, 7, 3));
-        // //allVerts.push(this.textureArray[2]);
+        let uvBuffer = gl.createBuffer();
+        if (!uvBuffer) {
+            console.log('failed to make uv buffer obj');
+            return -1;
+        }
+        let uvsF32 = new Float32Array(this.texture);
+        gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, uvsF32, gl.DYNAMIC_DRAW);
+        gl.vertexAttribPointer(a_UV, 2, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(a_UV);
 
-        // //left
-        // // if (!this.useColor)
-        // //     gl.uniform1i(textureID, this.textureArray[3]);
-        // allVerts = allVerts.concat(this.addTri(1, 3, 0));
-        // allVerts = allVerts.concat(this.addTri(0, 3, 2));
-        // //allVerts.push(this.textureArray[3]);
 
-        // //top
-        // // if (!this.useColor)
-        // //     gl.uniform1i(textureID, this.textureArray[4]);
-        // allVerts = allVerts.concat(this.addTri(2, 3, 6));
-        // allVerts = allVerts.concat(this.addTri(6, 3, 7));
-        // //allVerts.push(this.textureArray[4]);
+        gl.drawArrays(gl.TRIANGLES, 0, this.allVerts.length / 3);
 
-        // //bottom
-        // // if (!this.useColor)
-        // //     gl.uniform1i(textureID, this.textureArray[5]);
-        // allVerts = allVerts.concat(this.addTri(1, 0, 5));
-        // allVerts = allVerts.concat(this.addTri(5, 0, 4));
-
-        drawTrianglesUV_OneBuffer(this.allVerts, this.texture);
-        //return allVerts;
-
+        //without this, js gc would cause massive stutters of up to 2 seconds
+        gl.deleteBuffer(vertexBuffer);
+        gl.deleteBuffer(uvBuffer);
     }
 }

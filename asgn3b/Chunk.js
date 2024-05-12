@@ -144,16 +144,4 @@ class Chunk {
             }
         }
     }
-
-    updateChunkVisibility() {
-        // let chunkCenter = new Vector3([(this.offset.x * this.chunkWidth) + this.chunkWidth / 2, (this.offset.y * this.chunkHeight) + this.chunkWidth / 2, 0]);
-        // let distToCamera = chunkCenter.sub(camera.eye).magnitude();
-
-        // //let enableStatusPreviously = this.enabled;
-        // this.enabled = distToCamera <= maxViewDist;
-
-        // if (this.enabled)
-            this.enabled = true;
-            this.displayChunk();
-    }
 }

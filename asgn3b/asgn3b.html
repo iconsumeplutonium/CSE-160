@@ -4,75 +4,78 @@
         <meta charset="utf-8" />
         <title>asgn3b</title>
         <link rel="shortcut icon" href="#"> <!-- to silence the stupid favicon not found error-->
-        <style>
-            .container {
-              display: inline-flex;
-            }
-            .controls-container {
-                width: 100%;
-                margin-left: 20px;
-            }
-          </style>
+        <link href="https://fonts.cdnfonts.com/css/minecraftia" rel="stylesheet">
+        <link rel="stylesheet" href="site/styles.css">
     </head>
 
     <body onload="main()">
+
+
         <div class="container">
+            <div class="controls-container">
+                <p style="margin-bottom: 0px; padding: 0px;" id="fovText">FOV</p>
+                <input type="range" min="0" max="60" value="30" class="slider" id="fovSlider" oninput="updateFOV()">
+                <button class="btn-minecraft" onclick="resetSlider('fovSlider')">Reset</button>
+
+                <p style="margin-bottom: 0px; padding: 0px;" id="renderDistanceText">Render Distance</p>
+                <input type="range" min="0" max="4" value="2" class="slider" id="renderDistSlider" oninput="updateRenderDist()">
+                <button class="btn-minecraft" onclick="resetSlider('renderDistSlider')">Reset</button>
+            </div>
+
+
+            
             <div class="canvas-container">
-                <canvas id="webgl" width="640" height="480">
+                <canvas id="webgl" width="854" height="480">
                     Please use the browser that supports canvas.
                 </canvas>
+                <div class="image-container">
+                    <img class="bottom" src="site/hotbar.png" style="width: 640px;">
+                    <img class="top" src="site/hotbar_select.png" style="left: -1px;  visibility: hidden;" id="hotbar0">
+                    <img class="top" src="site/hotbar_select.png" style="left: 70px;  visibility: hidden;" id="hotbar1">
+                    <img class="top" src="site/hotbar_select.png" style="left: 140px; visibility: hidden;" id="hotbar2">
+                    <img class="top" src="site/hotbar_select.png" style="left: 210px; visibility: hidden;" id="hotbar3">
+                    <img class="top" src="site/hotbar_select.png" style="left: 280px; visibility: hidden;" id="hotbar4">
+                    <img class="top" src="site/hotbar_select.png" style="left: 350px; visibility: hidden;" id="hotbar5">
+                    <img class="top" src="site/hotbar_select.png" style="left: 420px; visibility: hidden;" id="hotbar6">
+                    <img class="top" src="site/hotbar_select.png" style="left: 490px; visibility: hidden;" id="hotbar7">
+                    <img class="top" src="site/hotbar_select.png" style="left: 560px; visibility: hidden;" id="hotbar8">
+                </div>
+                
+                <p id="selectedBlock"></p>
             </div>
-            
+
+
+
+
+
 
             <div class="controls-container">
-                <!-- Model Rotation
-                <div class="controls-container">
-                    X:
-                    <input type="range" min="0" max="360" value="0" class="slider" id="xSlider" oninput="renderAllShapes()">
-                    <button onclick="resetSlider('xSlider')">Reset</button> <br>
-                    Y:
-                    <input type="range" min="0" max="360" value="0" class="slider" id="ySlider" oninput="renderAllShapes()">
-                    <button onclick="resetSlider('ySlider')">Reset</button> <br>
-                    Z:
-                    <input type="range" min="0" max="360" value="0" class="slider" id="zSlider" oninput="renderAllShapes()">
-                    <button onclick="resetSlider('zSlider')">Reset</button> <br>
-                </div> -->
-                <br>
-
-                Debug sliders
-                <div class="controls-container">
-                    X:
-                    <input type="range" min="0" max="360" value="0" class="slider" id="debugX" oninput="renderAllShapes()">
-                    <button onclick="resetSlider('debugX')">Reset</button> <br>
-                    Y:
-                    <input type="range" min="0" max="360" value="0" class="slider" id="debugY" oninput="renderAllShapes()">
-                    <button onclick="resetSlider('debugY')">Reset</button> <br>
-                    Z:
-                    <input type="range" min="0" max="360" value="0" class="slider" id="debugZ" oninput="renderAllShapes()">
-                    <button onclick="resetSlider('debugZ')">Reset</button> <br>
+                <p id="fps"></p>
+                <div>
+                    <p style="margin: 0; padding: 0;">Player coordinates:</p>
+                    <p style="color: red; margin: 0; padding: 0;" id="playerCoordX">X:</p>
+                    <p style="color: green; margin: 0; padding: 0;" id="playerCoordY">Y:</p>
+                    <p style="color: blue; margin: 0; padding: 0;" id="playerCoordZ">Z:</p>
+                </div>
+                <div>
+                    <p style="margin-top: 1; margin-bottom: 0; padding: 0;">Chunk coordinates:</p>
+                    <p style="margin: 0; padding: 0;" id="chunkCoords"></p>
                 </div>
             </div>
         </div>
-
-
-        <p id="fps"></p>
-        <p id="selectedBlock"></p>
-        <p id="worldCoords"></p>
-        <p id="chunkCoords"></p>
         
         <script src="lib/webgl-utils.js"></script>
         <script src="lib/webgl-debug.js"></script>
         <script src="lib/cuon-utils.js"></script>
         <script src="lib/cuon-matrix.js"></script>
-        <!-- <script src="lib/perlin.js"></script> -->
         <script src="lib/Noise.js"></script>
         <script src='lib/perlin.js'></script>
+        <script src="UIManager.js"></script>
         <script src="TextureAtlasManager.js"></script>
         <script src="PlayerController.js"></script>
         <script src="InfiniteTerrain.js"></script>
         <script src="asgn3b.js"></script>
         <script src="Cube.js"></script>
-        <script src="Triangle.js"></script>
         <script src="Camera.js"></script>
         <script src="Chunk.js"></script>
         <br><br>
@@ -81,7 +84,5 @@
         <!-- <h2>Notes to Grader</h2> <br>
 
         The comically large stone block is supposed to be my "ground plane." -->
-
-        WASD to move, mouse to look around
     </body>
 </html>

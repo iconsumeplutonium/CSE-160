@@ -1,0 +1,122 @@
+.container {
+    font-family: 'Minecraftia', sans-serif;
+    display: flex;
+    justify-content: space-around;
+}
+
+.controls-container, .canvas-container, .right-column {
+    flex: 1;                         
+}
+
+.controls-container {
+    width: 100%;
+    margin-left: 20px;
+}
+.canvas-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+body {
+    background-image: url('dirt_background.png');
+    background-repeat: repeat;
+    background-size: cover;
+}
+
+p {
+    color: white;
+}
+
+.image-container {
+    position: relative;
+}
+
+.image-container img.bottom {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.image-container img.top {
+    width: 12.5%;
+    position: absolute;
+    top: -2px;
+}
+
+
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 60%;
+    height: 25px;
+    background: #333;
+    background: url('slider_background.png');
+    background-size: cover;
+    outline: 2px solid black;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 10px; 
+    height: 26px;
+    border-radius: 0px;
+    background: url('slider_thumb.png');
+    background-size: cover;
+    outline: none;
+
+}
+
+.slider::-moz-range-thumb {
+    width: 10px;
+    height: 26px;
+    border-radius: 0px;
+    background: url('slider_thumb.png');
+    background-size: cover;
+    outline: none;
+
+}
+
+.slider::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 1px white;
+}
+
+.slider::-moz-range-thumb:hover {
+    box-shadow: 0 0 0 1px white;
+}
+
+.slider::-moz-focus-outer {
+    border: 0;
+}
+
+/* Source: https://codepen.io/hudadamar21/pen/Rwoygwr */
+.btn-minecraft {
+    position: relative;
+    top: -7.5px;
+    margin-bottom: 30px;
+    background: #727272;
+    color: rgb(247, 247, 247);
+    width: 20%;
+    height: 28.5px;
+    text-shadow: 1.5px 1.5px 0 rgba(0, 0, 0, 0.8);
+    font-family: 'Minecraftia', sans-serif;
+    font-size: 80%;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(0, 0, 0, 1);
+    box-shadow: inset 3px 3px 0 rgba(255, 255, 255, 0.5),
+                inset -3px -3px 0 rgba(63, 63, 63, 1);
+    cursor: pointer;
+}
+
+.btn-minecraft:hover {
+    background: rgba(115, 107, 221, 1);
+}
+.btn-minecraft:focus {
+    color: rgb(246, 246, 44);
+    outline: none;
+}
+
+

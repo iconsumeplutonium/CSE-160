@@ -19,24 +19,26 @@ let inventory = [
     "bricks"
 ]
 let selectedSlot = 0;
-let selectedSlotDisplayText;
-
 const speed = 10;
 
 function selectNext() {
+    hotbar[selectedSlot].style.visibility = "hidden";
     selectedSlot++;
     if (selectedSlot >= inventory.length)
         selectedSlot = 0;
 
-    selectedSlotDisplayText.innerText = `Selected Block: ${inventory[selectedSlot]}`;
+    selectedSlotDisplayText.innerText = titlecaseBlockName(inventory[selectedSlot]);
+    hotbar[selectedSlot].style.visibility = "visible";
 }
 
 function selectPrev() {
+    hotbar[selectedSlot].style.visibility = "hidden";
     selectedSlot--;
     if (selectedSlot < 0)
         selectedSlot = inventory.length - 1;
 
-    selectedSlotDisplayText.innerText = `Selected Block: ${inventory[selectedSlot]}`;
+    selectedSlotDisplayText.innerText = titlecaseBlockName(inventory[selectedSlot]);
+    hotbar[selectedSlot].style.visibility = "visible";
 }
 
 let lastCalledTime, deltaTime, fps;
@@ -62,8 +64,10 @@ function playerController() {
     displayFPS();
     
     let chunkCoord = convertWorldCoordToChunkCoord(camera.eye);
-    cameraCoordDisplay.innerText = `X: ${camera.eye.x.toFixed(3)} Y: ${camera.eye.y.toFixed(3)} Z: ${camera.eye.z.toFixed(3)}`;
-    chunkCoordDisplay.innerText = `X: ${chunkCoord.x} Y: ${chunkCoord.y} Z: ${chunkCoord.z}`;
+    playerCoordDisplay[0].innerText = `X: ${camera.eye.x.toFixed(3)}`;
+    playerCoordDisplay[1].innerText = `Y: ${camera.eye.y.toFixed(3)}`;
+    playerCoordDisplay[2].innerText = `Z: ${camera.eye.z.toFixed(3)}`;
+    chunkCoordDisplay.innerText = `X: ${chunkCoord.x} Y: ${chunkCoord.y}`;
     requestAnimationFrame(playerController);
 }
 
