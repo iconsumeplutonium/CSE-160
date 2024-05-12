@@ -94,6 +94,9 @@ let debugX, debugY, debugZ;
 let fpsCounter;
 let mouseDelta = new Vector3();
 let camera;
+const chunkSize = 12;
+let cameraCoordDisplay, chunkCoordDisplay;
+let skybox = []
 
 function setupWebGL() {
     canvas = document.getElementById('webgl');
@@ -104,6 +107,8 @@ function setupWebGL() {
     }
 
     gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
 }
 
 function connectVariablesToGLSL() {
@@ -198,13 +203,12 @@ function main() {
 
     camera = new Camera(90);
 
-    // xSlider = document.getElementById("xSlider");
-    // ySlider = document.getElementById("ySlider");
-    // zSlider = document.getElementById("zSlider");
     selectedSlotDisplayText = document.getElementById("selectedBlock");
     selectedSlotDisplayText.innerText = `Selected Block: ${inventory[selectedSlot]}`;
 
     fpsCounter = document.getElementById("fps");
+    cameraCoordDisplay = document.getElementById("worldCoords");
+    chunkCoordDisplay = document.getElementById("chunkCoords");
 
     initTextures(0);
 
@@ -216,20 +220,20 @@ function main() {
     gl.uniformMatrix4fv(u_GlobalRotationMatrix, false, glob.elements);
 
     document.addEventListener('keydown', function(ev) {
-             if (ev.keyCode == 87) keys.w = true;
-        else if (ev.keyCode == 83) keys.s = true;
-        else if (ev.keyCode == 65) keys.a = true;
-        else if (ev.keyCode == 68) keys.d = true;
-        else if (ev.keyCode == 32) keys.space = true;
+             if (ev.keyCode == 87) keys.w      = true;
+        else if (ev.keyCode == 83) keys.s      = true;
+        else if (ev.keyCode == 65) keys.a      = true;
+        else if (ev.keyCode == 68) keys.d      = true;
+        else if (ev.keyCode == 32) keys.space  = true;
         else if (ev.keyCode == 16) keys.lshift = true;
     });
 
     document.addEventListener('keyup', function(ev) {
-             if (ev.keyCode == 87) keys.w = false;
-        else if (ev.keyCode == 83) keys.s = false;
-        else if (ev.keyCode == 65) keys.a = false;
-        else if (ev.keyCode == 68) keys.d = false;
-        else if (ev.keyCode == 32) keys.space = false;
+             if (ev.keyCode == 87) keys.w      = false;
+        else if (ev.keyCode == 83) keys.s      = false;
+        else if (ev.keyCode == 65) keys.a      = false;
+        else if (ev.keyCode == 68) keys.d      = false;
+        else if (ev.keyCode == 32) keys.space  = false;
         else if (ev.keyCode == 16) keys.lshift = false;
     });
 
@@ -254,59 +258,39 @@ function main() {
         mouseDelta.y = 0;
     })
 
-    canvas.addEventListener('click', function(event) {
+    canvas.addEventListener('mousedown', function(event) {
         canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
         canvas.requestPointerLock();
 
-        if (event.which === 1 && document.pointerLockElement === canvas) {
-            let chunkCoord = new Vector3([Math.floor(camera.at.x / 16), Math.floor(camera.at.z / 16), 0]);
-            //console.log(`Real pos: (${camera.at.x}, ${camera.at.y}, ${camera.at.z}), Chunk: ${chunkCoord.toString()}`);
+        let chunkCoord = convertWorldCoordToChunkCoord(camera.at);
+        console.log(`Real pos: (${camera.at.x}, ${camera.at.y}, ${camera.at.z}), Chunk: ${chunkCoord.toString()}`);
 
-            //get the chunk itself
-            //if camera.at is not in a valid chunk, return
-            let chunk;
-            try {
-                chunk = chunks.get(chunkCoord.toString());
-            } catch (e) {
-                return;
+        //get the chunk itself
+        //if camera.at is not in a valid chunk, return
+        let chunk = terrainChunkDict.get(chunkCoord.toString());
+        if (chunk == undefined)
+            return;
+
+        //convert world space coordinate to chunk space coordinate
+        let chunkSpaceCoordX = Math.round(camera.at.x - (chunk.offset.x * chunk.chunkWidth));
+        let chunkSpaceCoordY = Math.round(camera.at.y);
+        let chunkSpaceCoordZ = Math.round(camera.at.z - (chunk.offset.y * chunk.chunkHeight));
+
+
+        console.log(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ);
+
+        if (document.pointerLockElement === canvas) {
+            //left click (destroy block)
+            if (event.which === 1) {
+                chunk.deleteBlock(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ);
             }
-            
-            //convert world space coordinate to chunk space coordinate
-            let chunkSpaceCoordX = Math.round(camera.at.x - (chunk.offset.x * chunk.chunkWidth));
-            let chunkSpaceCoordY = Math.round(camera.at.y);
-            let chunkSpaceCoordZ = Math.round(camera.at.z - (chunk.offset.y * chunk.chunkHeight));
 
-            //console.log(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ);
-            chunk.deleteBlock(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ);
-            chunks.set(chunk.offset.toString(), chunk);
-        }        
-    });
-
-    canvas.addEventListener('mousedown', function(event) {
-        if (document.pointerLockElement === canvas && event.which === 3) {
-            //calculate the chunk coordinate of camera.at
-            let chunkCoord = new Vector3([Math.floor(camera.at.x / 16), Math.floor(camera.at.z / 16), 0]);
-            //console.log(`Real pos: (${camera.at.x}, ${camera.at.y}, ${camera.at.z}), Chunk: ${chunkCoord.toString()}`);
-
-            //get the chunk itself
-            //if camera.at is not in a valid chunk, return
-            let chunk;
-            try {
-                chunk = chunks.get(chunkCoord.toString());
-            } catch (e) {
-                return;
+            //right click (place block)
+            else if (event.which === 3) {
+                chunk.addOrModifyBlock(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ, inventory[selectedSlot]);
             }
-            
-            //convert world space coordinate to chunk space coordinate
-            let chunkSpaceCoordX = Math.round(camera.at.x - (chunk.offset.x * chunk.chunkWidth));
-            let chunkSpaceCoordY = Math.round(camera.at.y);
-            let chunkSpaceCoordZ = Math.round(camera.at.z - (chunk.offset.y * chunk.chunkHeight));
-
-            //console.log(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ);
-            chunk.addOrModifyBlock(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ, inventory[selectedSlot]);
-            chunks.set(chunk.offset.toString(), chunk);
         }
-    })
+    });
 
     canvas.addEventListener('wheel', function(event) {
         if (event.deltaY < 0)
@@ -315,20 +299,6 @@ function main() {
             selectNext();
     })
 
-    // gl.enable(gl.CULL_FACE);
-    // gl.cullFace(gl.BACK);
-
-
-    chunk = new Chunk(16, 16, new Vector3([0, 0, 0]));
-    chunk2 = new Chunk(16, 16, new Vector3([1, 0, 0]));
-    chunk3 = new Chunk(16, 16, new Vector3([0, 1, 0]));
-    chunk4 = new Chunk(16, 16, new Vector3([1, 1, 0]));
-
-    chunks.set(chunk.offset.toString(), chunk);
-    chunks.set(chunk2.offset.toString(), chunk2);
-    chunks.set(chunk3.offset.toString(), chunk3);
-    chunks.set(chunk4.offset.toString(), chunk4);
-
     skybox = new Cube("skybox");
     crosshairCube = new Cube("stone_block")
 
@@ -336,19 +306,15 @@ function main() {
     debugY = document.getElementById("debugY");
     debugZ = document.getElementById("debugZ");
 
+    for (let i = 0; i <= 5; i++)
+        skybox[i] = new Cube("skybox");
+
+    displaySkybox();
+
     playerController();
 }
 
-let chunk, chunk2, chunk3, chunk4, skybox;
-let chunks = new Map();
-
-let blocks = []
-let map= [];
-
 const sensitivity = 6;
-
-let globalVertexArray = [];
-let globalUVArray = [];
 
 let crosshairCube;
 
@@ -389,81 +355,54 @@ function renderAllShapes(useSliderValues = true) {
         camera.applyViewMatrix();
     } 
 
-    // if (useSliderValues) {
-    //     glob.setRotate(-xSlider.value, 1, 0, 0);
-    //     glob.rotate(ySlider.value, 0, 1, 0);
-    //     glob.rotate(zSlider.value, 0, 0, 1);
-    // }
 
     gl.uniformMatrix4fv(u_GlobalRotationMatrix, false, glob.elements);
 
-    // let ground = new Cube("stone_block");
-    // ground.matrix = new Matrix4();
-    // ground.matrix.setTranslate(0, -0.5, 0);
-    // ground.matrix.scale(10, 1, 10);
-    // // ground.useColor = false;
-    // ground.renderFast();
-
-    // let c = new Cube("grass_block");
-    // c.renderFast();
-
-    // let coloredCube = new Cube();
-    // coloredCube.useColor = true;
-    // coloredCube.color = [0, 0, 1, 1];
-    // coloredCube.matrix.setTranslate(-0.75, 0, 0);
-    // coloredCube.useColor = true;
-    // coloredCube.render();
-
+    displaySkybox();
     
-    skybox.matrix.setTranslate(camera.eye.x, camera.eye.y, camera.eye.z);
-    skybox.matrix.scale(100, 100, 100);
-    skybox.renderFast();
+    // skybox.matrix.setTranslate(camera.eye.x, camera.eye.y, camera.eye.z);
+    // skybox.matrix.scale(100, 100, 100);
+    // skybox.renderFast();
 
     crosshairCube.matrix.setTranslate(camera.at.x, camera.at.y, camera.at.z);
     crosshairCube.matrix.scale(0.1, 0.1, 0.1);
     crosshairCube.texture = GetUVsForTexture(inventory[selectedSlot]);
     crosshairCube.renderFast();
 
-    // for (let x = 0; x < 16; x++) {
-    //     for (let y = 0; y < 16; y++) {
-
-    //         let z = map[x][y].toFixed(1) * 10;
-    //         for (let i = 0; i < z - 1; i++) {
-    //             let block = new Cube("stone_block");
-    //             block.matrix.setTranslate(x, i, y);
-    //             block.renderFast();
-    //         }
-
-    //         let block = new Cube("grass_block");
-    //         block.matrix.setTranslate(x, z - 1, y);
-    //         block.renderFast();
-
-    //     }
-    // }
     
-    // chunk.displayChunk();
+    updateVisibleChunks();
+}
 
-    
-    // chunk2.displayChunk();
+//because I enabled backface culling, placing a super large cube around the player wont work because the inside
+//gets culled, and so nothing appears
+//to fix this, i just placed 6 planes around the player
+function displaySkybox() {
+    //top
+    skybox[0].matrix.setTranslate(camera.eye.x, camera.eye.y + 50, 0 + camera.eye.z);
+    skybox[0].matrix.scale(100, 0.1, 100);
+    skybox[0].matrix.rotate(180, 1, 0, 0);
 
-    
-    // chunk3.displayChunk();
+    //bottom
+    skybox[1].matrix.setTranslate(camera.eye.x, camera.eye.y - 50, camera.eye.z);
+    skybox[1].matrix.scale(100, 0.1, 100);
+    skybox[1].matrix.rotate(180, 1, 0, 0);
 
-    
-    // chunk4.displayChunk();
-    chunks.forEach(chunk => {
-        chunk.displayChunk();
-    })
+    skybox[2].matrix.setTranslate(camera.eye.x + 50, camera.eye.y, camera.eye.z);
+    skybox[2].matrix.scale(0.1, 100, 100);
+    skybox[2].matrix.rotate(180, 0, 1, 0);
 
+    skybox[3].matrix.setTranslate(camera.eye.x - 50, camera.eye.y, camera.eye.z);
+    skybox[3].matrix.scale(0.1, 100, 100);
+    skybox[3].matrix.rotate(180, 0, 1, 0);
 
-    // for (let i = 0; i < blocks.length; i++) {
-    //     blocks[i].renderFast();
-    // }
+    skybox[4].matrix.setTranslate(camera.eye.x, camera.eye.y, camera.eye.z + 50);
+    skybox[4].matrix.scale(100, 100, 0.1);
 
-    
+    skybox[5].matrix.setTranslate(camera.eye.x, camera.eye.y, camera.eye.z - 50);
+    skybox[5].matrix.scale(100, 100, 0.1);
 
-
-    
+    for (let i = 0; i <= 5; i++)
+        skybox[i].renderFast();
 }
 
 function resetSlider(name) {
