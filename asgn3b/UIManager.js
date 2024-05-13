@@ -130,7 +130,6 @@ function updateFOV() {
 }
 
 function updateRenderDist() {
-    //render distance 0 is actually valid (somehow), but we dont want to show that to the user, so we show 1 instead
     let newRenderDist = parseInt(renderDistSlider.value);
     renderDistance = newRenderDist;
     renderDistanceText.innerText = `Render Distance: ${newRenderDist} chunks`;
