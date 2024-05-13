@@ -1,9 +1,6 @@
+//adapted from
+//https://github.com/SebLague/Procedural-Landmass-Generation/blob/master/Proc%20Gen%20E03/Assets/Scripts/Noise.cs
 class Noise {
-    constructor() {
-        //adapted from
-        //https://github.com/SebLague/Procedural-Landmass-Generation/blob/master/Proc%20Gen%20E03/Assets/Scripts/Noise.cs
-    }
-
     static GenerateNoiseMap(mapWidth, mapHeight, scale, octaves, persistence, lacunarity, offset) {
         let map = [];
         for (let i = 0; i < mapHeight; i++)

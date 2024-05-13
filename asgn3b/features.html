@@ -5,6 +5,48 @@ Assignment 3B <br> <br>
 
 <h3>Notes to Grader</h3>
 
+For my blocky world, I recreated Minecraft as best as I could. <br><br>
+
+Firstly, for the terrain, I used a Perlin noise map with <a href="https://en.wikipedia.org/wiki/Fractional_Brownian_motion?useskin=vector">fractional brownian motion</a> (layer noise onto itself a bunch of times) in order to get the shape of the terrain. I originally wanted to have a few layer of stone underneath the world, however, this turned out to be very costly performance-wise because I'd be rendering blocks that would never be seen. Instead I elected to only render the blocks at the topmost layer of the world. <br><br>
+
+Here I ran into another issue. Normally in the height map, each block is zero or one block above its neighbor, in which case all is well. However, sometimes on steeper terrain, it is possible for a block to be <em>two</em> blocks above its neighbor, which leads to a noticable hole in the terrain. I did not want to simply generate a second layer of stone underneath the topmost layer to plug all holes, because that would again lead to unnecessarily rendered blocks. I instead made it so that when the chunk is created, it goes through every single block and if it is two block above its neighbor, it puts a stone block underneath it. This worked sufficiently enough. <br><br>
+
+Next I implemented infinite terrain generation. To do this, I created a Map, where each key was the chunk's coordinate and the value is the chunk itself (each chunk is assigned a coordinate based on its location in the world). As a player moves into a new area, it checks if a chunk already exists there by looking up that coordinate in the Map. If it does not exist, it will create a new one, store it in the Map, and render it. If it does exit in the map, it will render it. Each chunk uses its offset to sample the noise map at different locations such that the terrain is seamless. <br><br>
+
+Just for fun, I also added two different biomes to my world. There is a plains biome, characterized by grass blocks and trees, and a desert biome, characterized with sand and cacti. This was simple enough to do: each chunk actually samples the noise map <em>twice</em>, with different parameters. The first noise map is the height map, which determines the actual shape of the terrain itself, whilst the second noise map was the biome map. Any values above 0.45 in the biome map became a plains biome, and the rest became desert. <br><br>
+
+There are two types of vegetation in the world: trees and cacti. When the chunk is created, it hashes the world seed and its own world coordinates to create a chunk seed, unique to itself. This seed is then used to seed a pseudorandom number generator, which is used to determine the number of trees in this chunk (between 0 and 2 per chunk). Then it picks that many number of coordinates within the chunk and it places either a tree or cacti there, depending on whether that specific coordiante liesin the biome map. Because the global world seed is used in the creation of this chunk specific seed, the placement of the vegetation will always be the same given the same seed. <br><br>
+
+For player controls, I added the ability to look around freely with the mouse. The user can up down, left, or right. The sensitivy of the mouse can be controlled via a slider on the left side. In front of the player there is a very tiny block in the center of the screen. This is the "cursor." When you right click, it places the selected block at the cursor's location. When you left click, it deletes any block at that location. You can destroy any block in the chunk, including the ground and vegetaion itself. You can also place blocks anywhere in the chunk. The blocks you place and destroy are saved to that chunk. This means that if you were to break or build something in one chunk, then move outside of view range so that chunk gets unloaded, then return to that chunk, everything you did will still be there. <br><br>
+
+The UI displays a lot of information that may be relevant to the user. Along the left side are multiple settings that can be used to tailor the visual settings. The first element is a textbox where you can see the world seed. You can also input your own world seed to use for the world generator, or click the "random" button to generate a random seed. Underneath that is a slider to change the FOV of the camera, which dynamically updates the canvas in real time. Underneath that is a slider to adjust the render distance. This slider goes from 0 to 3 and it represents the number of chunks around the player that will be loaded in at a time.<br><br>
+ For referene, each chunk is 12 by 12 blocks. 
+<ul>
+    <li>0: 0 chunks around the player. The only chunk around the player that will be shown is the one they are currently in. 12 by 12 blocks</li>
+    <li>1: 1 chunk around the player in all directions; a 3 by 3 grid. 36 by 36 blocks </li>
+    <li>2: 2 chunks around the player in all directions; a 5 by 5 grid. 60 by 60 blocks (the default setting) </li>
+    <li>3: 3 chunks around the player in all directions; a 7 by 7 grid. 84 by 84 blocks.</li>
+</ul>
+
+Underneath that is a slider to control the the sensitivity of the mouse cursor. Underneath that is a checkbox that , when enabled, will hide all trees and cacti from rendering (a simple visual toggle to improve performance by a bit). <br><br>
+
+Along the right side, there is information about the game state itself. There is an FPS counter, the current in-game coordinates of the player, the coordinates of the current chunk the player is, a compass that displays what direction the user is facing, and information about the controls. <br><br>
+
+Along th ecenter is the hotbar, which displays what block the user has selected to be placed on left click. Use the scroll wheel to choose the block (just like in real Minecraft). <br><br>
+
+
+A few miscellaneous things:
+<ul>
+    <li>The textures of all the blocks are loaded in from a single texture atlas</li>
+    <li>I practically rewrote or changed a good chunk of the cuon=matrix.js Vector3 class for this assignment</li>
+    <li>the performance will slightly drop when the mouse moves around because javascript event listeners are my enemy</li>
+    <li>As an optimization, I enabled backface culling</li>
+    <li>I tried to implement view frustum culling, but it didn't work out. I would not work with the up and down rotation of the camera, you could visibly see the cutoff within camera view. Even without it, the performance is decent enough for render distance 2 and below.</li>
+</ul>
+
+
+
+
 
 
 

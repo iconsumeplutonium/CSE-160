@@ -51,4 +51,3 @@ let perlin = {
         return v;
     }
 }
-//perlin.seed();

@@ -98,6 +98,7 @@ class Camera {
 
     pointIsVisible(point) {
         //https://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-extracting-the-planes/
+        //failed view frustum culling code
 
         let rotationMatrix = new Matrix4();
         rotationMatrix.setRotate(mouseDelta.y * -sensitivity * deltaTime, camera.right.x, camera.right.y, camera.right.z);

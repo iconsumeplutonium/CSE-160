@@ -205,7 +205,6 @@ function main(firstStart = true) {
             canvas.requestPointerLock();
 
             let chunkCoord = convertWorldCoordToChunkCoord(camera.at);
-            //console.log(`Real pos: (${camera.at.x}, ${camera.at.y}, ${camera.at.z}), Chunk: ${chunkCoord.toString()}`);
 
             //get the chunk itself
             //if camera.at is not in a valid chunk, return
