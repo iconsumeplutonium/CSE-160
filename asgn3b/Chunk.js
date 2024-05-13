@@ -48,6 +48,8 @@ class Chunk {
 
             }
         }
+
+        //this.generateTrees();
     }
 
     convertToWorldHeight(value) {
@@ -55,13 +57,22 @@ class Chunk {
     }
 
     displayChunk() {
-        // if (!this.enabled)
+        // let bottomLeft = new Vector3(this.blockWorldPosOffset);
+        // let topLeft =     new Vector3([bottomLeft.x,                    camera.forward,  bottomLeft.z + this.chunkHeight]);
+        // let bottomRight = new Vector3([bottomLeft.x + this.chunkWidth,  camera.forward,  bottomLeft.z                   ]);
+        // let topRight =    new Vector3([bottomLeft.x + this.chunkWidth,  camera.forward,  bottomLeft.z = this.chunkHeight]);
+
+        // if (!(camera.pointIsVisible(bottomLeft) && camera.pointIsVisible(bottomRight) && camera.pointIsVisible(topLeft) && camera.pointIsVisible(topRight)))
         //     return;
 
         for (let i = 0; i < this.chunkWidth; i++) {
             for (let j = 0; j < this.chunkHeight; j++) {
-                if (!this.voxelMap[i][j].isAir)
-                    this.voxelMap[i][j].renderFast();
+                if (!this.voxelMap[i][j].isAir) {
+                    //let worldSpaceCoord = new Vector3([this.blockWorldPosOffset.x + i, this.voxelMap[i][j].coordinatesInChunk.y, this.blockWorldPosOffset.y + j]);
+
+                    //if (camera.pointIsVisible(worldSpaceCoord))
+                        this.voxelMap[i][j].renderFast();
+                }
             }
         }
 
@@ -142,6 +153,23 @@ class Chunk {
                 this.playerCreatedBlocks.splice(i, 1);
                 return;
             }
+        }
+    }
+
+    generateTrees() {
+        let numTreesInChunk = Math.floor(Math.random() * 3);
+
+        for (let i = 0; i < numTreesInChunk; i++) {
+            let randX = Math.floor(Math.random() * (this.chunkWidth - 1));
+            let randY = Math.floor(Math.random() * (this.chunkHeight - 1));
+
+            let height = this.convertToWorldHeight(this.noiseMap[randX][randY]);
+
+            let c = new Cube("bedrock");
+            c.matrix.setTranslate(this.blockWorldPosOffset.x + randX, height, this.blockWorldPosOffset.y + randY);
+            c.coordinatesInChunk = this.blockWorldPosOffset.x + randX, height, this.blockWorldPosOffset.y + randY;
+
+            this.playerCreatedBlocks.push(c);
         }
     }
 }
