@@ -146,14 +146,14 @@ function updateCompass() {
     const north = new Vector3([0, 0, -1]);
     
     let cameraDir = camera.forward;
-    cameraDir.y = 0;
+    //cameraDir.y = 0;
 
     const NS_dir = north.dot(cameraDir);
-    if (NS_dir > 0.98) {
+    if (NS_dir > 0.9) {
         compass.innerText = "Facing north (towards -Z)";
         compass.style.color = 'blue';
         return;
-    } else if (NS_dir < -0.98) {
+    } else if (NS_dir < -0.9) {
         compass.innerText = "Facing south (towards +Z)";
         compass.style.color = 'blue';
         return;
@@ -161,10 +161,10 @@ function updateCompass() {
         const east = new Vector3([1, 0, 0]);
         const WE_dir = east.dot(cameraDir);
 
-        if (WE_dir > 0.98) {
+        if (WE_dir > 0.9) {
             compass.innerText = "Facing east (towards +X)"
             compass.style.color = 'red';
-        } else if (WE_dir < -0.98) {
+        } else if (WE_dir < -0.9) {
             compass.innerText = "Facing west (towards -X)";
             compass.style.color = 'red';
         }
