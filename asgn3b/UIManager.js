@@ -12,6 +12,15 @@ let fovText;
 let renderDistSlider;
 let renderDistanceText;
 
+let mouseSensitivitySlider;
+let mouseSensitivityText;
+let sensitivity = 6;
+
+let compass;
+
+let seedBox;
+let worldSeed = Math.round(Math.random() * 23452354);
+
 function connectAllUIElements() {
     fpsCounter = document.getElementById("fps");
 
@@ -36,6 +45,27 @@ function connectAllUIElements() {
 
     renderDistanceText = document.getElementById("renderDistanceText");
     renderDistSlider = document.getElementById("renderDistSlider");
+    renderDistanceText.innerText = `Render Distance: ${parseInt(renderDistSlider.value)} chunks`;
+    renderDistance = parseInt(renderDistSlider.value);
+
+    mouseSensitivitySlider = document.getElementById("mouseSensitivitySlider");
+    mouseSensitivityText = document.getElementById("mouseSensitivityText");
+    sensitivity = 6;
+    updateMouseSensitivity();
+
+    compass = document.getElementById("compass");
+    updateCompass();
+
+    seedBox = document.getElementById("seedBox");
+    seedBox.addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+    });
+
+    seedBox.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            updateSeed();
+        }
+    });
 }
 
 function titlecaseBlockName(block) {
@@ -73,6 +103,10 @@ function resetSlider(name) {
             renderDistSlider.value = 2;
             updateRenderDist();
             return;
+        case "mouseSensitivitySlider":
+            mouseSensitivitySlider.value = 200;
+            updateMouseSensitivity();
+            return;
         default:
             document.getElementById(name).value = 0;
             break;
@@ -91,8 +125,54 @@ function updateFOV() {
 
 function updateRenderDist() {
     //render distance 0 is actually valid (somehow), but we dont want to show that to the user, so we show 1 instead
-    let newRenderDist = parseInt(renderDistSlider.value) + 1;
+    let newRenderDist = parseInt(renderDistSlider.value);
     renderDistance = newRenderDist;
     renderDistanceText.innerText = `Render Distance: ${newRenderDist} chunks`;
     renderAllShapes();
+}
+
+function updateMouseSensitivity() {
+    sensitivity = parseInt(mouseSensitivitySlider.value);
+    mouseSensitivityText.innerText = `Mouse Sensitivity: ${sensitivity}`;
+}
+
+function updateCompass() {
+    const north = new Vector3([0, 0, -1]);
+    
+    let cameraDir = camera.forward;
+    cameraDir.y = 0;
+
+    const NS_dir = north.dot(cameraDir);
+    if (NS_dir > 0.98) {
+        compass.innerText = "Facing north (towards -Z)";
+        compass.style.color = 'blue';
+        return;
+    } else if (NS_dir < -0.98) {
+        compass.innerText = "Facing south (towards +Z)";
+        compass.style.color = 'blue';
+        return;
+    } else {
+        const east = new Vector3([1, 0, 0]);
+        const WE_dir = east.dot(cameraDir);
+
+        if (WE_dir > 0.98) {
+            compass.innerText = "Facing east (towards +X)"
+            compass.style.color = 'red';
+        } else if (WE_dir < -0.98) {
+            compass.innerText = "Facing west (towards -X)";
+            compass.style.color = 'red';
+        }
+    }
+}
+
+function randomSeed() {
+    worldSeed = Math.floor(Math.random() * 4294967295);
+    seedBox.value = worldSeed;
+    updateSeed();
+}
+
+function updateSeed() {
+    worldSeed = parseInt(seedBox.value)
+    terrainChunkDict.clear();
+    main(false);
 }

@@ -43,31 +43,32 @@ function selectPrev() {
 
 let lastCalledTime, deltaTime, fps;
 function playerController() {
-    // if (document.pointerLockElement != canvas)
-    //     return;
-
-    if (keys.w) {
-        camera.moveForward(speed * deltaTime);
-    } else if (keys.s) {
-        camera.moveBackward(speed * deltaTime);
-    } else if (keys.a) {
-        camera.moveLeft(speed * deltaTime);
-    } else if (keys.d) {
-        camera.moveRight(speed * deltaTime);
-    } else if (keys.space) {
-        camera.moveUp(speed * deltaTime);
-    } else if (keys.lshift) {
-        camera.moveDown(speed * deltaTime);
+    console.log(document.pointerLockElement);
+    if (document.pointerLockElement === canvas) {
+        if (keys.w) {
+            camera.moveForward(speed * deltaTime);
+        } else if (keys.s) {
+            camera.moveBackward(speed * deltaTime);
+        } else if (keys.a) {
+            camera.moveLeft(speed * deltaTime);
+        } else if (keys.d) {
+            camera.moveRight(speed * deltaTime);
+        } else if (keys.space) {
+            camera.moveUp(speed * deltaTime);
+        } else if (keys.lshift) {
+            camera.moveDown(speed * deltaTime);
+        }
+        
+        let chunkCoord = convertWorldCoordToChunkCoord(camera.eye);
+        playerCoordDisplay[0].innerText = `X: ${camera.eye.x.toFixed(3)}`;
+        playerCoordDisplay[1].innerText = `Y: ${camera.eye.y.toFixed(3)}`;
+        playerCoordDisplay[2].innerText = `Z: ${camera.eye.z.toFixed(3)}`;
+        chunkCoordDisplay.innerText = `X: ${chunkCoord.x} Y: ${chunkCoord.y}`;
     }
-
+    
     renderAllShapes();
     displayFPS();
-    
-    let chunkCoord = convertWorldCoordToChunkCoord(camera.eye);
-    playerCoordDisplay[0].innerText = `X: ${camera.eye.x.toFixed(3)}`;
-    playerCoordDisplay[1].innerText = `Y: ${camera.eye.y.toFixed(3)}`;
-    playerCoordDisplay[2].innerText = `Z: ${camera.eye.z.toFixed(3)}`;
-    chunkCoordDisplay.innerText = `X: ${chunkCoord.x} Y: ${chunkCoord.y}`;
+    updateCompass();
     requestAnimationFrame(playerController);
 }
 

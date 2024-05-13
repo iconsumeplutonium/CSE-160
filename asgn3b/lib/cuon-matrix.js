@@ -118,10 +118,10 @@ class Vector3 {
 	* Calcualte the dop product between this vector and other.
 	* @return scalar
 	*/
-    static dot(other1, other2) {
+    dot(other) {
         let d = 0;
         for (let i = 0; i <= 2; i++)
-            d += other1.elements[i] * other2.elements[i];
+            d += this.elements[i] * other.elements[i];
 
         return d;
     }
@@ -130,10 +130,10 @@ class Vector3 {
     * Calcualte the cross product between this vector and other.
     * @return new vector
     */
-    static cross(other1, other2) {
-		let x = (other1.elements[1] * other2.elements[2]) - (other1.elements[2] * other2.elements[1]);
-		let y = (other1.elements[2] * other2.elements[0]) - (other1.elements[0] * other2.elements[2]);
-		let z = (other1.elements[0] * other2.elements[1]) - (other1.elements[1] * other2.elements[0]);
+    cross(other) {
+		let x = (this.elements[1] * other.elements[2]) - (this.elements[2] * other.elements[1]);
+		let y = (this.elements[2] * other.elements[0]) - (this.elements[0] * other.elements[2]);
+		let z = (this.elements[0] * other.elements[1]) - (this.elements[1] * other.elements[0]);
 		let v3 = new Vector3([x, y, z]);
 
 		return v3;

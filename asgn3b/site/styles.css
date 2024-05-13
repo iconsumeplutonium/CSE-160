@@ -119,4 +119,48 @@ p {
     outline: none;
 }
 
+.text-mc {
+    background-color: #000000;
+    border: rgba(181, 181, 181, 1);
+    width: 55%;
+    height: 15px;
+    color: #bababa;
+    padding: 10px;
+    font-family: 'Minecraftia', sans-serif;
+    font-size: 12px;
+}
+
+.text-mc:focus {
+    box-shadow: 0 0 0 2px rgba(181, 181, 181, 1);
+    outline: none;
+}
+
+
+.btn-minecraft2 {
+    position: relative;
+    top: 0px;
+    margin-bottom: 30px;
+    background: #727272;
+    color: rgb(247, 247, 247);
+    width: 22%;
+    height: 28.5px;
+    text-shadow: 1.5px 1.5px 0 rgba(0, 0, 0, 0.8);
+    font-family: 'Minecraftia', sans-serif;
+    font-size: 75%;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(0, 0, 0, 1);
+    box-shadow: inset 3px 3px 0 rgba(255, 255, 255, 0.5),
+                inset -3px -3px 0 rgba(63, 63, 63, 1);
+    cursor: pointer;
+}
+
+.btn-minecraft2:hover {
+    background: rgba(115, 107, 221, 1);
+}
+.btn-minecraft2:focus {
+    color: rgb(246, 246, 44);
+    outline: none;
+}
+
 

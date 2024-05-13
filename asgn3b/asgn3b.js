@@ -139,134 +139,132 @@ function connectVariablesToGLSL() {
 
 
 let glob;
-function main() {
+function main(firstStart = true) {
     setupWebGL();
     connectVariablesToGLSL();
 
     camera = new Camera(90);
 
-    // fpsCounter = document.getElementById("fps");
-    // cameraCoordDisplay = document.getElementById("worldCoords");
-    // chunkCoordDisplay = document.getElementById("chunkCoords");
-
     initTextures(0);
 
     gl.clearColor(0, 0, 0, 1.0);
-
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     glob = new Matrix4();
     gl.uniformMatrix4fv(u_GlobalRotationMatrix, false, glob.elements);
 
-    document.addEventListener('keydown', function(ev) {
-             if (ev.keyCode == 87) keys.w      = true;
-        else if (ev.keyCode == 83) keys.s      = true;
-        else if (ev.keyCode == 65) keys.a      = true;
-        else if (ev.keyCode == 68) keys.d      = true;
-        else if (ev.keyCode == 32) keys.space  = true;
-        else if (ev.keyCode == 16) keys.lshift = true;
-    });
+    connectAllUIElements();
+    perlin.seed(worldSeed);
+    worldSeed = Math.floor(Math.random() * 4294967295);
+    seedBox.value = worldSeed;
 
-    document.addEventListener('keyup', function(ev) {
-             if (ev.keyCode == 87) keys.w      = false;
-        else if (ev.keyCode == 83) keys.s      = false;
-        else if (ev.keyCode == 65) keys.a      = false;
-        else if (ev.keyCode == 68) keys.d      = false;
-        else if (ev.keyCode == 32) keys.space  = false;
-        else if (ev.keyCode == 16) keys.lshift = false;
-    });
+    if (firstStart) {
 
-    document.addEventListener('mousemove', function(ev) {
-        //let [x, y] = convertCoordinatesToGL(ev);
-        let x = ev.movementX;
-        let y = ev.movementY;
-        //console.log(`X: ${x}, Y: ${y}`);
-        //if (!mouseDelta) {
-            mouseDelta = new Vector3([x, y, 1]).normalize();
-        // } else {
-        //     mouseDelta.x = x;
-        //     mouseDelta.y = y;
-        //     mouseDelta = mouseDelta.normalize();
-        //     console.log(mouseDelta);
-        // }
+        document.addEventListener('keydown', function(ev) {
+                if (ev.keyCode == 87) keys.w      = true;
+            else if (ev.keyCode == 83) keys.s      = true;
+            else if (ev.keyCode == 65) keys.a      = true;
+            else if (ev.keyCode == 68) keys.d      = true;
+            else if (ev.keyCode == 32) keys.space  = true;
+            else if (ev.keyCode == 16) keys.lshift = true;
+        });
 
-        if (document.pointerLockElement === canvas)
-            renderAllShapes();
+        document.addEventListener('keyup', function(ev) {
+                if (ev.keyCode == 87) keys.w      = false;
+            else if (ev.keyCode == 83) keys.s      = false;
+            else if (ev.keyCode == 65) keys.a      = false;
+            else if (ev.keyCode == 68) keys.d      = false;
+            else if (ev.keyCode == 32) keys.space  = false;
+            else if (ev.keyCode == 16) keys.lshift = false;
+        });
 
-        mouseDelta.x = 0;
-        mouseDelta.y = 0;
-    })
+        document.addEventListener('mousemove', function(ev) {
+            //let [x, y] = convertCoordinatesToGL(ev);
+            let x = ev.movementX;
+            let y = ev.movementY;
+            //console.log(`X: ${x}, Y: ${y}`);
+            //if (!mouseDelta) {
+                mouseDelta = new Vector3([x, y, 1]).normalize();
+            // } else {
+            //     mouseDelta.x = x;
+            //     mouseDelta.y = y;
+            //     mouseDelta = mouseDelta.normalize();
+            //     console.log(mouseDelta);
+            // }
 
-    canvas.addEventListener('mousedown', function(event) {
-        canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
-        canvas.requestPointerLock();
+            //if (document.pointerLockElement === canvas)
+                //renderAllShapes();
 
-        let chunkCoord = convertWorldCoordToChunkCoord(camera.at);
-        //console.log(`Real pos: (${camera.at.x}, ${camera.at.y}, ${camera.at.z}), Chunk: ${chunkCoord.toString()}`);
+            // mouseDelta.x = 0;
+            // mouseDelta.y = 0;
+        })
 
-        //get the chunk itself
-        //if camera.at is not in a valid chunk, return
-        let chunk = terrainChunkDict.get(chunkCoord.toString());
-        if (chunk == undefined)
-            return;
+        canvas.addEventListener('mousedown', function(event) {
+            canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
+            canvas.requestPointerLock();
 
-        //convert world space coordinate to chunk space coordinate
-        console.log(`${camera.at.x}, ${camera.at.z}`)
-        let chunkSpaceCoordX = Math.round(camera.at.x - (chunk.offset.x * chunk.chunkWidth));
-        let chunkSpaceCoordY = Math.round(camera.at.y);
-        let chunkSpaceCoordZ = Math.round(camera.at.z - (chunk.offset.y * chunk.chunkHeight));
+            let chunkCoord = convertWorldCoordToChunkCoord(camera.at);
+            //console.log(`Real pos: (${camera.at.x}, ${camera.at.y}, ${camera.at.z}), Chunk: ${chunkCoord.toString()}`);
 
-        // if the chunk offset is 0, then chunkSpaceCoordX and Z can be greater than chunkSize
-        if (chunkSpaceCoordX >= chunkSize)
-            chunkSpaceCoordX = chunkSpaceCoordX % chunkSize;
+            //get the chunk itself
+            //if camera.at is not in a valid chunk, return
+            let chunk = terrainChunkDict.get(chunkCoord.toString());
+            if (chunk == undefined)
+                return;
 
-        if (chunkSpaceCoordZ >= chunkSize)
-            chunkSpaceCoordZ = chunkSpaceCoordZ % chunkSize;
+            //convert world space coordinate to chunk space coordinate
+            console.log(`${camera.at.x}, ${camera.at.z}`)
+            let chunkSpaceCoordX = Math.round(camera.at.x - (chunk.offset.x * chunk.chunkWidth));
+            let chunkSpaceCoordY = Math.round(camera.at.y);
+            let chunkSpaceCoordZ = Math.round(camera.at.z - (chunk.offset.y * chunk.chunkHeight));
+
+            // if the chunk offset is 0, then chunkSpaceCoordX and Z can be greater than chunkSize
+            if (chunkSpaceCoordX >= chunkSize)
+                chunkSpaceCoordX = chunkSpaceCoordX % chunkSize;
+
+            if (chunkSpaceCoordZ >= chunkSize)
+                chunkSpaceCoordZ = chunkSpaceCoordZ % chunkSize;
 
 
-        //console.log(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ);
+            //console.log(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ);
 
-        if (document.pointerLockElement === canvas) {
-            //left click (destroy block)
-            if (event.which === 1) {
-                chunk.deleteBlock(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ);
+            if (document.pointerLockElement === canvas) {
+                //left click (destroy block)
+                if (event.which === 1) {
+                    chunk.deleteBlock(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ);
+                }
+
+                //right click (place block)
+                else if (event.which === 3) {
+                    chunk.addOrModifyBlock(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ, inventory[selectedSlot]);
+                }
             }
+        });
 
-            //right click (place block)
-            else if (event.which === 3) {
-                chunk.addOrModifyBlock(chunkSpaceCoordX, chunkSpaceCoordY, chunkSpaceCoordZ, inventory[selectedSlot]);
-            }
-        }
-    });
+        canvas.addEventListener('wheel', function(event) {
+            if (event.deltaY < 0)
+                selectPrev();
+            else
+                selectNext();
+        })
 
-    canvas.addEventListener('wheel', function(event) {
-        if (event.deltaY < 0)
-            selectPrev();
-        else
-            selectNext();
-    })
+    }
 
     skybox = new Cube("skybox");
     crosshairCube = new Cube("stone_block")
-
-    debugX = document.getElementById("debugX");
-    debugY = document.getElementById("debugY");
-    debugZ = document.getElementById("debugZ");
 
     for (let i = 0; i <= 5; i++)
         skybox[i] = new Cube("skybox");
 
     displaySkybox();
-    connectAllUIElements();
 
-    playerController();
+    if (firstStart)
+        playerController();
 }
-
-const sensitivity = 6;
 
 let crosshairCube;
 
-function renderAllShapes(useSliderValues = true) {
+function renderAllShapes() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     //only if mouseDelta is declared and the canvas is selected
@@ -275,11 +273,11 @@ function renderAllShapes(useSliderValues = true) {
 
         //Left and right
         let m = new Matrix4();
-        m.setRotate(mouseDelta.x * -sensitivity, camera.up.x, camera.up.y, camera.up.z);
+        m.setRotate(mouseDelta.x * -sensitivity * deltaTime, camera.up.x, camera.up.y, camera.up.z);
         let f = m.multiplyVector3(camera.forward).normalize();
 
         //Up and down
-        m.setRotate(mouseDelta.y * -sensitivity, camera.right.x, camera.right.y, camera.right.z);
+        m.setRotate(mouseDelta.y * -sensitivity * deltaTime, camera.right.x, camera.right.y, camera.right.z);
         let g = m.multiplyVector3(camera.forward).normalize();
 
         //no matter what i do, clamping the fucking g vector clamps the f vector as well
@@ -301,6 +299,9 @@ function renderAllShapes(useSliderValues = true) {
 
         camera.at = camera.eye.add(f).add(g);
         camera.applyViewMatrix();
+
+        mouseDelta.x = 0;
+        mouseDelta.y = 0;
     } 
 
 

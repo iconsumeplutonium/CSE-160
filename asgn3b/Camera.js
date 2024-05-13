@@ -5,6 +5,10 @@ class Camera {
         this.at = new Vector3([0, 48, 1]);
         this.up = new Vector3([0, 1, 0]);
 
+        this.nearDist = 0.1;
+        this.farDist = 100;
+        this.aspectRatio = canvas.width / canvas.height;
+
         this.viewMatrix = new Matrix4().setIdentity();
         this.applyViewMatrix();
 
@@ -17,11 +21,31 @@ class Camera {
     }
 
     get right() {
-        return Vector3.cross(this.forward, this.up).normalize();
+        return this.forward.cross(this.up).normalize();
+    }
+
+    //height of the near clipping plane
+    get Hnear() {
+        return 2 * Math.tan(this.fov / 2) * this.nearDist;
+    }
+
+    //width of the near clipping plane
+    get Wnear() {
+        return this.Hnear * this.aspectRatio;
+    }
+
+    //height of the far clipping plane
+    get Hfar() {
+        return 2 * Math.tan(this.fov / 2) * this.farDist;
+    }
+
+    //width of the far clipping plane
+    get Wfar() {
+        return this.Hfar * this.aspectRatio;
     }
 
     applyProjectionMatrix() {
-        this.projectionMatrix.setPerspective(this.fov, canvas.width / canvas.height, 0.1, 100);
+        this.projectionMatrix.setPerspective(this.fov, this.aspectRatio, this.nearDist, this.farDist);
         gl.uniformMatrix4fv(u_ProjectionMatrix, false, this.projectionMatrix.elements);
     }
 
@@ -70,6 +94,59 @@ class Camera {
 
         camera.eye = camera.eye.sub(upVector);
         camera.at = camera.at.sub(upVector);
+    }
+
+    pointIsVisible(point) {
+        //https://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-extracting-the-planes/
+
+        let rotationMatrix = new Matrix4();
+        rotationMatrix.setRotate(mouseDelta.y * -sensitivity * deltaTime, camera.right.x, camera.right.y, camera.right.z);
+
+        let localForward = rotationMatrix.multiplyVector3(this.forward).normalize();
+        let localUp = rotationMatrix.multiplyVector3(this.up).normalize();
+        let localRight = localForward.cross(localUp);
+
+                
+        const fc = this.eye.add(localForward.mul(this.farDist)); //center of the far clipping plane
+        const nc = this.eye.add(localForward.mul(this.nearDist)); //center of the near clipping plane
+
+        //near plane
+        if (this.signedDistance(localForward, nc, point) < 0)
+            return false;
+
+        //far plane
+        if (this.signedDistance(localForward.mul(-1), fc, point) < 0)
+            return false;
+
+        //right plane
+        let a = nc.add(localRight.mul(this.Wnear / 2)).sub(this.eye).normalize();
+        let normal = localUp.cross(a);
+        if (this.signedDistance(normal, camera.eye, point) < 0)
+            return false;
+
+        //left plane
+        a = nc.sub(localRight.mul(this.Wnear / 2)).sub(this.eye).normalize();
+        normal = a.cross(localUp);
+        if (this.signedDistance(normal, camera.eye, point) < 0)
+            return false;
+
+        //top plane
+        a = nc.add(localUp.mul(this.Hnear / 2)).sub(this.eye).normalize();
+        normal = a.cross(localRight);
+        if (this.signedDistance(normal, camera.eye, point) < 0)
+            return false;
+
+        //bottom plane
+        a = nc.sub(localUp.mul(this.Hnear / 2)).sub(this.eye).normalize();
+        normal = localRight.cross(a);
+        if (this.signedDistance(normal, camera.eye, point) < 0)
+            return false;
+
+        return true;
+    }
+
+    signedDistance(planeNormal, pointOnPlane, pointToTest) {
+        return planeNormal.dot(pointToTest.sub(pointOnPlane));
     }
 
 

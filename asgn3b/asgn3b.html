@@ -9,17 +9,23 @@
     </head>
 
     <body onload="main()">
-
-
         <div class="container">
             <div class="controls-container">
+                <p style="margin-bottom: 0px; padding: 0px;" id="">World Seed:</p>
+                <input type="text" class="text-mc" id="seedBox" pattern="\d*" oninput="">
+                <button class="btn-minecraft2" onclick="randomSeed()">Random</button>
+
                 <p style="margin-bottom: 0px; padding: 0px;" id="fovText">FOV</p>
                 <input type="range" min="0" max="60" value="30" class="slider" id="fovSlider" oninput="updateFOV()">
                 <button class="btn-minecraft" onclick="resetSlider('fovSlider')">Reset</button>
 
                 <p style="margin-bottom: 0px; padding: 0px;" id="renderDistanceText">Render Distance</p>
-                <input type="range" min="0" max="4" value="2" class="slider" id="renderDistSlider" oninput="updateRenderDist()">
+                <input type="range" min="0" max="3" value="2" class="slider" id="renderDistSlider" oninput="updateRenderDist()">
                 <button class="btn-minecraft" onclick="resetSlider('renderDistSlider')">Reset</button>
+
+                <p style="margin-bottom: 0px; padding: 0px;" id="mouseSensitivityText">Mouse Sensitivity</p>
+                <input type="range" min="125" max="1000" value="250" class="slider" id="mouseSensitivitySlider" oninput="updateMouseSensitivity()">
+                <button class="btn-minecraft" onclick="resetSlider('mouseSensitivitySlider')">Reset</button>
             </div>
 
 
@@ -60,6 +66,10 @@
                 <div>
                     <p style="margin-top: 1; margin-bottom: 0; padding: 0;">Chunk coordinates:</p>
                     <p style="margin: 0; padding: 0;" id="chunkCoords"></p>
+                </div>
+                <div>
+                    <p style="margin-top: 1; margin-bottom: 0; padding: 0;">Direction:</p>
+                    <p style="margin: 0; padding: 0;" id="compass"></p>
                 </div>
             </div>
         </div>

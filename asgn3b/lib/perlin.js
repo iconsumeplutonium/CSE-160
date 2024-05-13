@@ -5,7 +5,7 @@ https://github.com/joeiddon/perlin/
 'use strict';
 let perlin = {
     rand_vect: function(){
-        let theta = Math.random() * 2 * Math.PI;
+        let theta = this.random() * 2 * Math.PI;
         return {x: Math.cos(theta), y: Math.sin(theta)};
     },
     dot_prod_grid: function(x, y, vx, vy){
@@ -25,9 +25,14 @@ let perlin = {
     interp: function(x, a, b){
         return a + this.smootherstep(x) * (b-a);
     },
-    seed: function(){
+    seed: function(seed) {
+        this.noiseSeed = seed;
         this.gradients = {};
         this.memory = {};
+    },
+    random: function() {
+        let x = Math.sin(this.noiseSeed++) * 10000;
+        return x - Math.floor(x);
     },
     get: function(x, y) {
         if (this.memory.hasOwnProperty([x,y]))
@@ -46,4 +51,4 @@ let perlin = {
         return v;
     }
 }
-perlin.seed();
+//perlin.seed();
