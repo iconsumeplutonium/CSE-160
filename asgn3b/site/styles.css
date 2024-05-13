@@ -25,7 +25,7 @@ body {
     background-size: cover;
 }
 
-p {
+p, span {
     color: white;
 }
 
@@ -162,5 +162,33 @@ p {
     color: rgb(246, 246, 44);
     outline: none;
 }
+
+
+input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #494949;
+    border: 2px solid #000000;
+    position: relative;
+    top: 8px;
+}
+
+input[type="checkbox"]:checked {
+    background: #494949;
+}
+
+input[type="checkbox"]:checked:after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #ffffff;
+    left: 50%;
+    top: 50%;
+    transform: translate(-55%, -48%);
+}
+
 
 

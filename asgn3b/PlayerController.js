@@ -43,7 +43,6 @@ function selectPrev() {
 
 let lastCalledTime, deltaTime, fps;
 function playerController() {
-    console.log(document.pointerLockElement);
     if (document.pointerLockElement === canvas) {
         if (keys.w) {
             camera.moveForward(speed * deltaTime);

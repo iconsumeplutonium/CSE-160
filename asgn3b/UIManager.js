@@ -19,7 +19,9 @@ let sensitivity = 6;
 let compass;
 
 let seedBox;
-let worldSeed = Math.round(Math.random() * 23452354);
+let worldSeed;
+
+let disableFoliageCheckbox;
 
 function connectAllUIElements() {
     fpsCounter = document.getElementById("fps");
@@ -54,6 +56,8 @@ function connectAllUIElements() {
     updateMouseSensitivity();
 
     compass = document.getElementById("compass");
+    compass.innerText = "Facing north (towards -Z)";
+    compass.style.color = 'blue';
     updateCompass();
 
     seedBox = document.getElementById("seedBox");
@@ -66,6 +70,8 @@ function connectAllUIElements() {
             updateSeed();
         }
     });
+
+    disableFoliageCheckbox = document.getElementById("disableFoliageCheckbox");
 }
 
 function titlecaseBlockName(block) {

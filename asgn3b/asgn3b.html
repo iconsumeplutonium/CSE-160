@@ -12,7 +12,7 @@
         <div class="container">
             <div class="controls-container">
                 <p style="margin-bottom: 0px; padding: 0px;" id="">World Seed:</p>
-                <input type="text" class="text-mc" id="seedBox" pattern="\d*" oninput="">
+                <input type="text" class="text-mc" id="seedBox" pattern="\d*">
                 <button class="btn-minecraft2" onclick="randomSeed()">Random</button>
 
                 <p style="margin-bottom: 0px; padding: 0px;" id="fovText">FOV</p>
@@ -26,6 +26,9 @@
                 <p style="margin-bottom: 0px; padding: 0px;" id="mouseSensitivityText">Mouse Sensitivity</p>
                 <input type="range" min="125" max="1000" value="250" class="slider" id="mouseSensitivitySlider" oninput="updateMouseSensitivity()">
                 <button class="btn-minecraft" onclick="resetSlider('mouseSensitivitySlider')">Reset</button>
+
+                <span style="margin-bottom: 0px; padding: 0px; font-size: 13px;">Disable Tree/Cactus spawning</span>
+                <input type="checkbox" id="disableFoliageCheckbox">
             </div>
 
 

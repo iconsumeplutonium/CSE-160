@@ -4,6 +4,7 @@ class Cube {
         this.matrix = new Matrix4();
         this.coordinatesInChunk = null;
         this.isAir = false; //if true, this block is skipped in chunk rendering (represents a deleted block)
+        this.isFoliage = false; //if true, this block is skipped in rendering if disable foliage option is selected
 
         let cubeSize = 1;
         this.coordinates = [

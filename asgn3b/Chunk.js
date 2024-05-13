@@ -12,8 +12,12 @@ class Chunk {
             this.voxelMap[i] = [];
         }
 
-        //im also pushing the subsurface stone layer into here because i cant be bothered making a new array for it
+        let partialHash = (worldSeed * 569 + this.offset.x) % Number.MAX_SAFE_INTEGER;
+        this.chunkSeed = (partialHash * 1499 + this.offset.y) % Number.MAX_SAFE_INTEGER;
+
+        //im also pushing the subsurface stone layer + tree blocks into here because i cant be bothered making a new array for it
         this.playerCreatedBlocks = [];
+        //this.chunkTreeBlocks = [];
 
         this.blockWorldPosOffset = new Vector3([this.offset.x * this.chunkWidth, this.offset.y * this.chunkHeight, 0]);
         for (let x = 0; x < this.chunkWidth; x++) {
@@ -49,7 +53,7 @@ class Chunk {
             }
         }
 
-        //this.generateTrees();
+        this.generateTrees();
     }
 
     convertToWorldHeight(value) {
@@ -76,8 +80,18 @@ class Chunk {
             }
         }
 
-        for (let i = 0; i < this.playerCreatedBlocks.length; i++)
+        for (let i = 0; i < this.playerCreatedBlocks.length; i++) {
+            if (this.playerCreatedBlocks[i].isFoliage && disableFoliageCheckbox.checked)
+                continue;
+
             this.playerCreatedBlocks[i].renderFast();
+        }
+        // for (let i = 0; i < this.chunkTreeBlocks.length; i++) {
+        //     //let worldSpaceCoord = new Vector3([this.chunkTreeBlocks[i].coordinatesInChunk.x + this.blockWorldPosOffset.x, this.chunkTreeBlocks[i].coordinatesInChunk.y, this.chunkTreeBlocks[i].coordinatesInChunk.z + this.blockWorldPosOffset.y]);
+
+        //     //if (camera.pointIsVisible(worldSpaceCoord))
+        //         this.chunkTreeBlocks[i].renderFast();
+        // }
     }
 
     //returns a list of the neighbors of a coordinate in a heightmap
@@ -140,36 +154,122 @@ class Chunk {
 
     deleteBlock(x, y, z) {
         //check voxel map
+        console.log("voxel map:", this.voxelMap[x][z].coordinatesInChunk.toString())
         console.log(x, z);
         if (this.voxelMap[x] && this.voxelMap[x][z] && this.voxelMap[x][z].coordinatesInChunk.y == y) {
-            console.log("here")
             this.voxelMap[x][z].isAir = true;
             return;
         }
+
+        console.log(x, y, z);
         
         //check playerCreatedBlocks
         for (let i = 0; i < this.playerCreatedBlocks.length; i++) {
+            console.log(this.playerCreatedBlocks[i].coordinatesInChunk.toString());
             if (this.playerCreatedBlocks[i].coordinatesInChunk.equals([x, y, z])) {
                 this.playerCreatedBlocks.splice(i, 1);
                 return;
             }
         }
+
+        //check chunk foliage array
+        // for (let i = 0; i < this.chunkTreeBlocks.length; i++) {
+        //     console.log(this.chunkTreeBlocks[i].coordinatesInChunk.toString());
+        //     if (this.chunkTreeBlocks[i].coordinatesInChunk.equals([x, y, z])) {
+        //         this.chunkTreeBlocks.splice(i, 1);
+        //         return;
+        //     }
+        // }
     }
 
     generateTrees() {
-        let numTreesInChunk = Math.floor(Math.random() * 3);
+        const prng = this.sfc32(this.chunkSeed, this.chunkSeed, this.chunkSeed, this.chunkSeed);
+        //burn first 10 random numbers, because this algorithm seems to give almost similar starting numbers
+        for (let i = 0; i <= 10; i++)
+            prng();
+
+        let numTreesInChunk = Math.floor(prng() * 2);
 
         for (let i = 0; i < numTreesInChunk; i++) {
-            let randX = Math.floor(Math.random() * (this.chunkWidth - 1));
-            let randY = Math.floor(Math.random() * (this.chunkHeight - 1));
-
+            let randX = Math.floor(prng() * (this.chunkWidth - 1));
+            let randY = Math.floor(prng() * (this.chunkHeight - 1));
             let height = this.convertToWorldHeight(this.noiseMap[randX][randY]);
+            let treeBaseCoord = new Vector3([this.blockWorldPosOffset.x + randX, height, this.blockWorldPosOffset.y + randY]);
+            let localBaseCoord = new Vector3([randX, height, randY]);
 
-            let c = new Cube("bedrock");
-            c.matrix.setTranslate(this.blockWorldPosOffset.x + randX, height, this.blockWorldPosOffset.y + randY);
-            c.coordinatesInChunk = this.blockWorldPosOffset.x + randX, height, this.blockWorldPosOffset.y + randY;
+            if (this.biomeMap[randX][randY] >= 0.45) { //plains, make normal tree
+                //trunk
+                let c = new Cube("oak_log");
+                c.matrix.setTranslate(treeBaseCoord.x, treeBaseCoord.y, treeBaseCoord.z);
+                c.coordinatesInChunk = new Vector3(localBaseCoord);
+                c.isFoliage = true;
+                this.playerCreatedBlocks.push(c);
 
-            this.playerCreatedBlocks.push(c);
+                c = new Cube("oak_log");
+                c.matrix.setTranslate(treeBaseCoord.x, treeBaseCoord.y + 1, treeBaseCoord.z);
+                c.coordinatesInChunk = new Vector3([localBaseCoord.x, localBaseCoord.y + 1, localBaseCoord.z]);
+                c.isFoliage = true;
+                this.playerCreatedBlocks.push(c);
+
+                //3 by 3 layer of leaves
+                //the center block will be covered, so we can skip it
+                for (let j = -1; j <= 1; j++) {
+                    for (let k = -1; k <= 1; k++) {
+                        if (j == 0 && k == 0)
+                            continue;
+
+                        let v = new Vector3([treeBaseCoord.x + j, treeBaseCoord.y + 2, treeBaseCoord.z + k]);
+                        let w = new Vector3([localBaseCoord.x + j, localBaseCoord.y + 2, localBaseCoord.z + k]);
+                        c = new Cube("oak_leaves");
+                        c.matrix.setTranslate(v.x, v.y, v.z);
+                        c.coordinatesInChunk = new Vector3(w);
+                        c.isFoliage = true;
+                        this.playerCreatedBlocks.push(c);
+                    }
+                }
+
+                //plus-shaped layer of leaves
+                for (let j = -1; j <= 1; j++) {
+                    for (let k = -1; k <= 1; k++) {
+                        if (Math.abs(j) == 1 && Math.abs(k) == 1)
+                            continue;
+
+                        let v = new Vector3([treeBaseCoord.x + j, treeBaseCoord.y + 3, treeBaseCoord.z + k]);
+                        let w = new Vector3([localBaseCoord.x + j, localBaseCoord.y + 3, localBaseCoord.z + k]);
+                        c = new Cube("oak_leaves");
+                        c.matrix.setTranslate(v.x, v.y, v.z);
+                        c.coordinatesInChunk = new Vector3(w);
+                        c.isFoliage = true;
+                        this.playerCreatedBlocks.push(c);
+                    }
+                }
+            } else { //desert, make cactus
+
+                let cactusHeight = Math.round(prng() * 3);
+                for (let j = 0; j <= cactusHeight; j++) {
+                    let v = new Vector3([treeBaseCoord.x, treeBaseCoord.y + j, treeBaseCoord.z]);
+                    let w = new Vector3([localBaseCoord.x, localBaseCoord.y + j, localBaseCoord.z]);
+                    let c = new Cube("cactus");
+                    c.matrix.setTranslate(v.x, v.y, v.z);
+                    c.coordinatesInChunk = new Vector3(w);
+                    c.isFoliage = true;
+                    this.playerCreatedBlocks.push(c);
+                }
+            }
         }
     }
+
+    //from https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
+    sfc32(a, b, c, d) {
+        return function() {
+          a |= 0; b |= 0; c |= 0; d |= 0;
+          let t = (a + b | 0) + d | 0;
+          d = d + 1 | 0;
+          a = b ^ b >>> 9;
+          b = c + (c << 3) | 0;
+          c = (c << 21 | c >>> 11);
+          c = c + t | 0;
+          return (t >>> 0) / 4294967296;
+        }
+      }
 }

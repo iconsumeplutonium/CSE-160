@@ -2,7 +2,7 @@ class Camera {
     constructor(fov) {
         this.fov = fov;
         this.eye = new Vector3([0, 50, 0]);
-        this.at = new Vector3([0, 48, 1]);
+        this.at = new Vector3([0, 48, -1]);
         this.up = new Vector3([0, 1, 0]);
 
         this.nearDist = 0.1;
@@ -26,7 +26,7 @@ class Camera {
 
     //height of the near clipping plane
     get Hnear() {
-        return 2 * Math.tan(this.fov / 2) * this.nearDist;
+        return 2 * Math.tan(((this.fov + 30) * (Math.PI / 180)) / 2) * this.nearDist;
     }
 
     //width of the near clipping plane
@@ -36,7 +36,7 @@ class Camera {
 
     //height of the far clipping plane
     get Hfar() {
-        return 2 * Math.tan(this.fov / 2) * this.farDist;
+        return 2 * Math.tan(((this.fov + 30) * (Math.PI / 180)) / 2) * this.farDist;
     }
 
     //width of the far clipping plane

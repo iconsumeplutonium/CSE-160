@@ -154,8 +154,9 @@ function main(firstStart = true) {
     gl.uniformMatrix4fv(u_GlobalRotationMatrix, false, glob.elements);
 
     connectAllUIElements();
+    if (!worldSeed)
+        worldSeed = Math.floor(Math.random() * 4294967295);
     perlin.seed(worldSeed);
-    worldSeed = Math.floor(Math.random() * 4294967295);
     seedBox.value = worldSeed;
 
     if (firstStart) {

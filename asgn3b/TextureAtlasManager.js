@@ -1,22 +1,37 @@
+//so the reason why several textures are duplicated in my atlas is because of texture atlas bleeding
+//something to do with the fact that the fragment at the UV coordinate can lie exactly between two different textures' pixels
+//and so it interpolates between them, leading to a visible seam along the edge of the block
+//so i was having issues with gray boxes around sand (because I had my sand texture next to my cobblestone texture), and white lines around my 
+//cactus and oak log textures (because they all border the skybox texture)
+//to fix this, i duplicated those textures, moved them into their own corners, and surrounded it with duplicates of themselves
+//that way, it "bleeds" into its own color
+//https://gamedev.stackexchange.com/questions/46963/how-to-avoid-texture-bleeding-in-a-texture-atlas
+
 //the bottom left corner of the texture in the texture atlas
-const DIRT        = new Vector3([0,     0]);
-const GRASS_SIDE  = new Vector3([0.25,  0]);
-const GRASS_TOP   = new Vector3([0.5,   0]);
-const STONE       = new Vector3([0.75,  0]);
+const DIRT           = new Vector3([0,          0]);
+const GRASS_SIDE     = new Vector3([0.125,      0]);
+const GRASS_TOP      = new Vector3([0.25,       0]);
+const STONE          = new Vector3([0.375,      0]);
+const GRAVEL         = new Vector3([0.5,        0]);
+const OAK_PLANKS     = new Vector3([0.625,      0]);
+const BEDROCK        = new Vector3([0.75,       0]);
+const BRICKS         = new Vector3([0.875,      0]);
 
-const SKYBOX1     = new Vector3([0,     0.25]);
-const SKYBOX2     = new Vector3([0.25,  0.25]);
-const SKYBOX3     = new Vector3([0.5,   0.25]);
-const SKYBOX4     = new Vector3([0.75,  0.25]);
-const SKYBOX5     = new Vector3([0,     0.5]);
-const SKYBOX6     = new Vector3([0.25,  0.5]);
+const SKYBOX1        = new Vector3([0,      0.125]);
+const SKYBOX2        = new Vector3([0.125,  0.125]);
+const SKYBOX3        = new Vector3([0.25,   0.125]);
+const SKYBOX4        = new Vector3([0.375,  0.125]);
+const SKYBOX5        = new Vector3([0.5,    0.125]);
+const SKYBOX6        = new Vector3([0.625,  0.125]);
+const COBBLESTONE    = new Vector3([0.75,   0.125]);
+const SAND           = new Vector3([0.875,  0.875]);
 
-const COBBLESTONE = new Vector3([0.5,   0.5]);
-const SAND        = new Vector3([0.75,  0.5]);
-const GRAVEL      = new Vector3([0,     0.75]);
-const OAK_PLANKS  = new Vector3([0.25,  0.75]);    
-const BEDROCK     = new Vector3([0.5,   0.75]);
-const BRICKS      = new Vector3([0.75,  0.75]);
+const OAK_LOG_TOP    = new Vector3([0,      0.25]);
+const OAK_LOG_SIDE   = new Vector3([0,      0.375]);
+const OAK_LEAVES     = new Vector3([0,      0.875]);
+const CACTUS_SIDE    = new Vector3([0.375,  0.875]);
+const CACTUS_TOP     = new Vector3([0.5,    0.25]);
+const CACTUS_BOTTOM  = new Vector3([0.625,  0.25]);
 
 //order: front left right back top bottom
 function GetUVsForTexture(block) {
@@ -80,7 +95,31 @@ function GetUVsForTexture(block) {
             for (let i = 0; i < 6; i++)
                 uvs = uvs.concat(extractSingularSquare(DIRT));
             break;
+        
+        case "oak_log":
+            uvs = uvs.concat(extractSingularSquare(OAK_LOG_SIDE));
+            uvs = uvs.concat(extractSingularSquare(OAK_LOG_SIDE));
+            uvs = uvs.concat(extractSingularSquare(OAK_LOG_SIDE));
+            uvs = uvs.concat(extractSingularSquare(OAK_LOG_SIDE));
+            uvs = uvs.concat(extractSingularSquare(OAK_LOG_TOP));
+            uvs = uvs.concat(extractSingularSquare(OAK_LOG_TOP));
 
+            break;
+        
+        case "oak_leaves":
+            for (let i = 0; i < 6; i++)
+                uvs = uvs.concat(extractSingularSquare(OAK_LEAVES));
+            break;
+
+        case "cactus":
+            uvs = uvs.concat(extractSingularSquare(CACTUS_SIDE));
+            uvs = uvs.concat(extractSingularSquare(CACTUS_SIDE));
+            uvs = uvs.concat(extractSingularSquare(CACTUS_SIDE));
+            uvs = uvs.concat(extractSingularSquare(CACTUS_SIDE));
+            uvs = uvs.concat(extractSingularSquare(CACTUS_TOP));
+            uvs = uvs.concat(extractSingularSquare(CACTUS_BOTTOM));
+
+            break;
     }
 
     return uvs;
@@ -88,12 +127,12 @@ function GetUVsForTexture(block) {
 
 function extractSingularSquare(textureOffset) {
     let UVs = [];
-    UVs.push(0, 0,     0, 0.25,   0.25, 0);
-    UVs.push(0.25, 0,  0, 0.25,   0.25, 0.25);
+    UVs.push(0, 0,      0, 0.125,   0.125, 0);
+    UVs.push(0.125, 0,  0, 0.125,   0.125, 0.125);
 
     const EPSILON = 0.0001;
     for (let i = 0; i < 12; i++) {
-        UVs[i] += (i % 2 == 0) ? textureOffset.x - 0 : textureOffset.y - 0;
+        UVs[i] += (i % 2 == 0) ? textureOffset.x + 0 : textureOffset.y - 0;
     }
     
     return UVs;
@@ -105,7 +144,7 @@ function extractSingularSquare(textureOffset) {
 //skybox texture from https://opengameart.org/content/sky-box-sunny-day
 const texturePath = 'textures/';
 const textures = [
-   'texture_atlas.png'
+   'texture_atlas2.png'
 ]
 function initTextures(n) {
     let numLoadedTextures = 0;
