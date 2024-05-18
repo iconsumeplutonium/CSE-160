@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>asgn5b</title>
+        <link rel="shortcut icon" href="#"> <!-- to silence the stupid favicon not found error-->
+        <script type="importmap">
+            {
+              "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@v0.163.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/"
+              }
+            }
+        </script>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+
+    <body>
+        <canvas id="webgl" width="900" height="450">
+            <div class="split">
+                <div id="view1" tabindex="1"></div>
+                <div id="view2" tabindex="2"></div>
+             </div>
+        </canvas>
+
+        <script src="MinMaxGUIHelper.js"></script>
+        <script type="module" src="asgn5b.js"></script>
+        
+
+        <p id="fpsCounter">FPS: </p>
+
+        <h3>Notes to Grader:</h3>
+        <p>
+            There is a directional light on the TIE interceptor, and as the ship flies around, it lights up the objects from different angles. There is also an ambient and hemisphere light. <br>
+            There are 20 objects: the primary three (icosahedron, command block, sphere with face), the TIE interceptor, and 16 other objects. These objects are given a random color and <br>
+            random position in the scene. <br>
+            There is also a skybox and orbit controls.
+        </p>
+
+        
+
+    </body>
+</html>
