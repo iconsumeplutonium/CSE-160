@@ -1,82 +1,119 @@
 class Cube {
-    constructor(color) {
-        this.color = color;
-        this.matrix = null;
+    constructor(blockType) {
+        this.color = null;
+        this.matrix = new Matrix4();
+        this.normalMatrix = new Matrix4();
+        this.coordinatesInChunk = null;
+        this.isAir = false; //if true, this block is skipped in chunk rendering (represents a deleted block)
+        this.isFoliage = false; //if true, this block is skipped in rendering if disable foliage option is selected
 
-        this.cubeSize = 0.5;
-        this.cornerCoords = [
-            [0, 0, 0],//0
-            [0, 0, this.cubeSize],//1
-            [0, this.cubeSize, 0],//2
-            [0, this.cubeSize, this.cubeSize],//3
-            [this.cubeSize, 0, 0],//4
-            [this.cubeSize, 0, this.cubeSize],//5
-            [this.cubeSize, this.cubeSize, 0],//6
-            [this.cubeSize, this.cubeSize, this.cubeSize],//7
+        let cubeSize = 1;
+        this.coordinates = [
+            [-(cubeSize / 2), -(cubeSize / 2), -(cubeSize / 2)],
+            [-(cubeSize / 2), -(cubeSize / 2), (cubeSize / 2)],
+            [-(cubeSize / 2), (cubeSize / 2), -(cubeSize / 2)],
+            [-(cubeSize / 2), (cubeSize / 2), (cubeSize / 2)],
+            [(cubeSize / 2), -(cubeSize / 2), -(cubeSize / 2)],
+            [(cubeSize / 2), -(cubeSize / 2), (cubeSize / 2)],
+            [(cubeSize / 2), (cubeSize / 2), -(cubeSize / 2)],
+            [(cubeSize / 2), (cubeSize / 2), (cubeSize / 2)],
         ];
 
-        this.v = [];
-        this.colors = [];
 
-        this.coordToTri([0, 2, 4], 0.9);
-        this.coordToTri([4, 2, 6], 0.9);
+        this.texture = GetUVsForTexture(blockType);
+        this.useColor = false;
 
-        this.coordToTri([4, 6, 5], 1);
-        this.coordToTri([5, 6, 7], 1);
+        this.allVerts = [];
 
-        this.coordToTri([5, 7, 1], 0.9);
-        this.coordToTri([1, 7, 3], 0.9);
+        this.allVerts = this.allVerts.concat(this.addTri(0, 2, 4));
+        this.allVerts = this.allVerts.concat(this.addTri(4, 2, 6));
+        
+        this.allVerts = this.allVerts.concat(this.addTri(4, 6, 5));
+        this.allVerts = this.allVerts.concat(this.addTri(5, 6, 7));
 
-        this.coordToTri([1, 3, 0], 0.9);
-        this.coordToTri([0, 3, 2], 0.9);
+        this.allVerts = this.allVerts.concat(this.addTri(5, 7, 1));
+        this.allVerts = this.allVerts.concat(this.addTri(1, 7, 3));
 
-        this.coordToTri([2, 3, 6], 1);
-        this.coordToTri([6, 3, 7], 1);
+        this.allVerts = this.allVerts.concat(this.addTri(1, 3, 0));
+        this.allVerts = this.allVerts.concat(this.addTri(0, 3, 2));
 
-        this.coordToTri([1, 0, 5], 0.9);
-        this.coordToTri([5, 0, 4], 0.9);
+        this.allVerts = this.allVerts.concat(this.addTri(2, 3, 6));
+        this.allVerts = this.allVerts.concat(this.addTri(6, 3, 7));
 
-        this.vertices = new Float32Array(this.v);
+        this.allVerts = this.allVerts.concat(this.addTri(1, 0, 5));
+        this.allVerts = this.allVerts.concat(this.addTri(5, 0, 4));
+
+
+        this.normals = [];
+        this.normals.push(0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1);  //front
+        this.normals.push(1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0);  //right
+        this.normals.push(0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1);  //back
+        this.normals.push(-1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0);  //left
+        this.normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0);  //top
+        this.normals.push(0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0); //bottom
+
+
     }
 
-    coordToTri(indices, mod) {
-        for (let j = 0; j < indices.length; j++) {
-            let index = indices[j];
-            for (let i = 0; i < 3; i++) {
-                this.v.push(this.cornerCoords[index][i]);// - (this.cubeSize / 2));
-                this.colors.push(this.color[0] * mod, this.color[1] * mod, this.color[2] * mod, this.color[3]); //a new color buffer, because I don't have a drawTriangles lol
-            }
-        }
-    }
+    addTri(a, b, c) {
+        let l = [];
+        l = l.concat(this.coordinates[a]);
+        l = l.concat(this.coordinates[b]);
+        l = l.concat(this.coordinates[c]);
 
-    render() {
+        return l;
+    }
+    
+    renderFast() {
+        if (this.isAir)
+            return;
+
         gl.uniformMatrix4fv(u_ModelMatrix, false, this.matrix.elements);
+        gl.uniform3fv(u_FragColor, new Float32Array([0, 0, 1]));
 
-        var n = this.vertices.length / 3;
+        this.normalMatrix.setInverseOf(this.matrix);
+        this.normalMatrix.transpose();
+        gl.uniformMatrix4fv(u_NormalMatrix, false, this.normalMatrix.elements);
 
-        var vertexBuffer = gl.createBuffer();
+        let vertexBuffer = gl.createBuffer();
         if (!vertexBuffer) {
-            console.log('Failed to create the buffer object');
+            console.log('Failed to create buffer obj');
             return -1;
         }
 
-        let colorBuffer = gl.createBuffer();
-        if (!colorBuffer) {
-            console.log('Failed to create the buffer object');
-            return -1;
-        }
-      
-
+        let verticesF32 = new Float32Array(this.allVerts);
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.DYNAMIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, verticesF32, gl.DYNAMIC_DRAW);
         gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(a_Position);
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.colors), gl.DYNAMIC_DRAW);    
-        gl.vertexAttribPointer(a_Color, 4, gl.FLOAT, false, 0, 0);        
-        gl.enableVertexAttribArray(a_Color);
 
-        gl.drawArrays(gl.TRIANGLES, 0, n);
-    }     
+        // let uvBuffer = gl.createBuffer();
+        // if (!uvBuffer) {
+        //     console.log('failed to make uv buffer obj');
+        //     return -1;
+        // }
+        // let uvsF32 = new Float32Array(this.texture);
+        // gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
+        // gl.bufferData(gl.ARRAY_BUFFER, uvsF32, gl.DYNAMIC_DRAW);
+        // gl.vertexAttribPointer(a_UV, 2, gl.FLOAT, false, 0, 0);
+        // gl.enableVertexAttribArray(a_UV);
+
+
+        let normalBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.normals), gl.DYNAMIC_DRAW);
+        gl.vertexAttribPointer(a_Normal, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(a_Normal);
+
+
+
+
+
+        gl.drawArrays(gl.TRIANGLES, 0, this.allVerts.length / 3);
+
+        gl.deleteBuffer(vertexBuffer);
+        //gl.deleteBuffer(uvBuffer);
+        gl.deleteBuffer(normalBuffer);
+    }
 }

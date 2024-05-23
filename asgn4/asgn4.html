@@ -2,259 +2,88 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <title>asgn4</title>
+        <title>asgn3b</title>
         <link rel="shortcut icon" href="#"> <!-- to silence the stupid favicon not found error-->
-        <style>
-            .container {
-              display: inline-flex;
-            }
-            .controls-container {
-                width: 100%;
-                margin-left: 20px;
-            }
-          </style>
+        <!-- <link href="https://fonts.cdnfonts.com/css/minecraftia" rel="stylesheet">-->
+        <link rel="stylesheet" href="site/styles.css"> 
     </head>
 
     <body onload="main()">
         <div class="container">
+            <div class="controls-container">
+
+                <p style="margin-bottom: 0px; padding: 0px;" id="fovText">FOV</p>
+                <input type="range" min="0" max="60" value="30" class="slider" id="fovSlider" oninput="updateFOV()">
+                <button class="btn-minecraft" onclick="resetSlider('fovSlider')">Reset</button>
+
+                <p style="margin-bottom: 0px; padding: 0px;" id="mouseSensitivityText">Mouse Sensitivity</p>
+                <input type="range" min="125" max="1000" value="250" class="slider" id="mouseSensitivitySlider" oninput="updateMouseSensitivity()">
+                <button class="btn-minecraft" onclick="resetSlider('mouseSensitivitySlider')">Reset</button>
+            </div>
+
+
+            
             <div class="canvas-container">
-                <canvas id="webgl" width="600" height="600">
-                    Please a browser that supports
+                <canvas id="webgl" width="854" height="480">
+                    Please use the browser that supports canvas.
                 </canvas>
             </div>
-            <div class="controls-container">
 
-                Head:
-                <div class="controls-container">
-                    X:
-                    <input type="range" min="-30" max="30" value="0" class="slider" id="x_head" oninput="rotateBodyPart('x_head', this.value)"> 
-                    <button onclick="resetSlider('x_head')">Reset</button> <br>
-                    Y:
-                    <input type="range" min="-90" max="90" value="0" class="slider" id="y_head" oninput="rotateBodyPart('y_head', this.value)">
-                    <button onclick="resetSlider('y_head')">Reset</button> <br>
-                    Z:
-                    <input type="range" min="0" max="70" value="0" class="slider" id="z_head" oninput="rotateBodyPart('z_head', this.value)">
-                    <button onclick="resetSlider('z_head')">Reset</button> <br>
-                </div>
-                <br>
 
-                Left Arm:
-                <div class="controls-container">
-                    Shoulder: 
-                    <input type="range" min="-90" max="180" value="0" class="slider" id="left_shoulder" oninput="rotateBodyPart('left_shoulder', this.value)"> 
-                    <button onclick="resetSlider('left_shoulder')">Reset</button> <br>
-                    Elbow:
-                    <input type="range" min="0" max="160" value="0" class="slider" id="left_elbow" oninput="rotateBodyPart('left_elbow', this.value)">
-                    <button onclick="resetSlider('left_elbow')">Reset</button> <br>
-                    Hand:
-                    <input type="range" min="0" max="90" value="0" class="slider" id="left_hand" oninput="rotateBodyPart('left_hand', this.value)">
-                    <button onclick="resetSlider('left_hand')">Reset</button> <br>
-                </div>
-                <br>
 
-                Right Arm:
-                <div class="controls-container">
-                    Shoulder: 
-                    <input type="range" min="-90" max="180" value="0" class="slider" id="right_shoulder" oninput="rotateBodyPart('right_shoulder', this.value)"> 
-                    <button onclick="resetSlider('right_shoulder')">Reset</button> <br>
-                    Elbow:
-                    <input type="range" min="0" max="160" value="0" class="slider" id="right_elbow" oninput="rotateBodyPart('right_elbow', this.value)">
-                    <button onclick="resetSlider('right_elbow')">Reset</button> <br>
-                    Hand:
-                    <input type="range" min="0" max="90" value="0" class="slider" id="right_hand" oninput="rotateBodyPart('right_hand', this.value)">
-                    <button onclick="resetSlider('right_hand')">Reset</button> <br>
-                </div> <br><br>
 
-                Animations:
-                <select id="animationSelect">
-                    <option value="none">None</option>
-                    <option value="walk">Walking</option>
-                </select> <br>
-                <button id ="crowbarAnimationButton" onclick="requestAnimationFrame(function(time) {beginAnimation(time, 'crowbar')})">Crowbar Animation</button> (Can also be triggered by shift-left clicking on canvas) <br>
-                <br><br><br><br><br>
-                <button onclick="resetAll()">Reset All Sliders</button>
-                
-                <br> Rotate model with cursor:
-                <input type="checkbox" id="enableRotation">
 
-                <!-- <br><br><br><br><br><br><br><br><br><br><br><br>
-                random debug stuff (remove later) <br>
-                x: 
-                <input type="range" min="-500" max="500" value="0" class="slider" id="whereSliderX" oninput="renderAllShapes()">
-                y: 
-                <input type="range" min="-500" max="500" value="0" class="slider" id="whereSliderY" oninput="renderAllShapes()">
-                z: 
-                <input type="range" min="-500" max="500" value="0" class="slider" id="whereSliderZ" oninput="renderAllShapes()">
-                <br>
-                <p id="cubeLocationText"></p>
-
-                <button onclick="reset('X')">reset X</button>
-                <button onclick="reset('Y')">reset Y</button>
-                <button onclick="reset('Z')">reset Z</button> <br>
-
-                Y:
-                <button onclick="setView('y', 0)">set 0</button> 
-                <button onclick="setView('y', 90)">set 90</button>
-                <button onclick="setView('y', 180)">set 180</button>
-                <button onclick="setView('y', 270)">set 270</button> -->
-
-            </div>
 
             <div class="controls-container">
-                Model Rotation
-                <div class="controls-container">
-                    X:
-                    <input type="range" min="0" max="360" value="21" class="slider" id="xSlider" oninput="renderAllShapes()">
-                    <button onclick="resetSlider('xSlider')">Reset</button> <br>
-                    Y:
-                    <input type="range" min="0" max="360" value="125" class="slider" id="ySlider" oninput="renderAllShapes()">
-                    <button onclick="resetSlider('ySlider')">Reset</button> <br>
-                    Z:
-                    <input type="range" min="0" max="360" value="0" class="slider" id="zSlider" oninput="renderAllShapes()">
-                    <button onclick="resetSlider('zSlider')">Reset</button> <br>
+                <p id="fps"></p>
+                <div>
+                    <p style="margin: 0; padding: 0;">Player coordinates:</p>
+                    <p style="color: red; margin: 0; padding: 0;" id="playerCoordX">X:</p>
+                    <p style="color: green; margin: 0; padding: 0;" id="playerCoordY">Y:</p>
+                    <p style="color: blue; margin: 0; padding: 0;" id="playerCoordZ">Z:</p>
                 </div>
-                <br>
-
-                Left Leg:
-                <div class="controls-container">
-                    Hip: 
-                    <input type="range" min="0" max="120" value="20" class="slider" id="left_hip" oninput="rotateBodyPart('left_hip', this.value)"> 
-                    <button onclick="resetSlider('left_hip')">Reset</button> <br>
-                    Knee:
-                    <input type="range" min="0" max="130" value="0" class="slider" id="left_knee" oninput="rotateBodyPart('left_knee', this.value)">
-                    <button onclick="resetSlider('left_knee')">Reset</button> <br>
-                </div> <br><br>
-
-                Right Leg:
-                <div class="controls-container">
-                    Hip: 
-                    <input type="range" min="0" max="120" value="20" class="slider" id="right_hip" oninput="rotateBodyPart('right_hip', this.value)"> 
-                    <button onclick="resetSlider('right_hip')">Reset</button> <br>
-                    Knee:
-                    <input type="range" min="0" max="130" value="0" class="slider" id="right_knee" oninput="rotateBodyPart('right_knee', this.value)">
-                    <button onclick="resetSlider('right_knee')">Reset</button> <br>
+                <div>
+                    <p style="margin-top: 1; margin-bottom: 0; padding: 0;">Chunk coordinates:</p>
+                    <p style="margin: 0; padding: 0;" id="chunkCoords"></p>
                 </div>
+                <div style="margin-bottom: 20px;">
+                    <p style="margin-top: 1; margin-bottom: 0; padding: 0;">Direction:</p>
+                    <p style="margin: 0; padding: 0;" id="compass"></p>
+                </div>
+                <div>
+                    <p style="margin: 0; padding: 0;">Controls</p>
+                    <ul>
+                        <li style="margin: 0; padding: 0; font-size: 15px;">WASD to move around</li>
+                        <li style="margin: 0; padding: 0; font-size: 15px;">Space to move up</li>
+                        <li style="margin: 0; padding: 0; font-size: 15px;">Left shift to move down</li>
+                        <li style="margin: 0; padding: 0; font-size: 15px;">Mouse to look</li>
+                    </ul>
+                </div>
+
 
             </div>
         </div>
-
-        <p id="fps"></p>
         
         <script src="lib/webgl-utils.js"></script>
         <script src="lib/webgl-debug.js"></script>
         <script src="lib/cuon-utils.js"></script>
         <script src="lib/cuon-matrix.js"></script>
+        <script src="lib/Noise.js"></script>
+        <script src='lib/perlin.js'></script>
+        <script src="UIManager.js"></script>
+        <script src="TextureAtlasManager.js"></script>
+        <script src="PlayerController.js"></script>
+        <script src="InfiniteTerrain.js"></script>
         <script src="Cube.js"></script>
-        <script src="Cube2.js"></script>
-        <script src="Lambda.js"></script>
-        <script src="colors.js"></script>
-        <script src="Sphere.js"></script> 
+        <script src="Camera.js"></script>
+        <script src="Chunk.js"></script>
+        <script src="Sphere.js"></script>
         <script src="asgn4.js"></script>
-        
         <br><br>
         
+        
+        <!-- <h2>Notes to Grader</h2> <br>
 
-
-        Assignment 2 <br> <br>
-
-        <h3>Notes to Grader</h3>
-
-        <p>
-        This assignment took me about 25 hours cross 4 or 5 days, and it was definitely an experience. <br><br>
-
-        For my block animal, I chose Gordon Freeman, the protagonist of the Half-Life video game series, in his iconic HEV Suit with his signature crowbar in hand. 
-        <br>
-        <img src="images/freeman.png">
-        <img src="images/voxel_freeman.png" width="12%">
-
-        <br><br>
-        I created a Cube class that lets me instantiate cubes with a given color at a given coordinate, as well as scale, rotate, or translate it with matrices. There are six primary components: the head, the left arm, the right arm, the torso, the left leg, and the right leg. Each of these is comprised of numerous amounts of cubes, and placing and moving around these cubes took me several days. <br><br>
-
-        The head has 22 cubes
-        <ul>
-            <li>1 for the base head</li>
-            <li>3 for the hair on the left side of the head</li>
-            <li>3 for the hair on the right side of the head</li>
-            <li>2 for each ear</li>
-            <li>1 for the top of the head</li>
-            <li>1 for the back of the head</li>
-            <li>7 for the glasses</li>
-            <li>4 for the beard</li>
-        </ul>
-
-        The torso has 18 cubes
-        <ul>
-            <li>1 for the chest</li>
-            <li>1 for the lower chest</li>
-            <li>1 for the stomach</li>
-            <li>1 for the waist</li>
-            <li>2 for the black dividers between the mid sections</li>
-            <li>1 orange square on the chest where the Lambda symbol goes</li>
-            <li>5 orange strips just under the Lambda symbol going around the suit (2 front, 2 side, 1 back)</li>
-            <li>5 orange strips around the waist (2 front, 2 side, 1, back)</li>
-            <li>1 orange square on the back</li>
-        </ul>
-
-        The left arm (and by extension, right arm) has 5 cubes
-        <ul>
-            <li>1 for the shoulder</li>
-            <li>1 for the upper arm</li>
-            <li>1 for the elbow</li>
-            <li>1 for the forarm</li>
-            <li>1 for the hand</li>
-        </ul>
-
-        The left leg (and by extension, right leg) has 5 cubes
-        <ul>
-            <li>1 for the upper hip</li>
-            <li>1 for the lower hip</li>
-            <li>1 for the knee</li>
-            <li>1 for the upper boot/shin</li>
-            <li>1 for the lower boot/foot</li>
-        </ul>
-
-        The crowbar has 3 cubes
-        <ul>
-            <li>1 for the handle</li>
-            <li>2 for the bend</li>
-        </ul>
-
-        All in all, that adds up to 63 cubes. In addition, I also make my own custom geometry in the form of the Lambda symbol on the chest. For this shape, rather than just placing cubes on top of each other, I decided to instead do what I did for <a href="https://iconsumeplutonium.github.io/CSE-160/asgn1/features.html">Assignment 1</a> and trace out the symbol in Photoshop, draw out the triangles, import the drawing into Desmos, calculate coordinates for each vector, and then create a custom Lambda.js class to render in the Lambda symbol.
-        <br>
-        <img src="images/lambda.png">
-        <img src="images/lambda triangles.png">
-        <br>
-
-        The Desmos link can be found <a href="https://www.desmos.com/calculator/cmz5godfoj">here.</a> <br><br>
-
-        In terms of joint movement, all body parts can be rotated to a realistic degree (the body parts bed only as far as they would on a normal human), and there are sliders to control all of this, plus reset buttons to return to the default state. <br>
-        <br>
-        In terms of animation there are two: the first can be activated either by clicking the "Crowbar" button or by shift + left-clicking on the canvas. In this animation, Gordon Freeman will raise his right arm (the one with the crowbar) and swing it. It will then "hit" and play the crowbar hit sound effect from the original Half-Life game from 1998. This animation cannot be spammed, and in fact the button and shift + left-click functionality disables itself when any animation is playing (including itself). <br> <br>
-
-        The other animation I made is a basic walking animation, in which Gordon moves his legs and arms the way a human would walk. This animation, unlike the crowbar animation, is infinite. It plays when you select "walking" in the animation dropdown and will keep playing forever until you switch back to "none". When you switch to the walking animation, it will play the Valve startup sound (the sound that plays when you start up Half-Life or any other game made by Valve). I have it configured so that if you switch back to "none" before the audio has finished playing, it will cut off the sound. <br> <br>
-
-        I also added the ability to rotate the model with the mouse cursor, but this functionality is so jank that I added a toggle to disable it entirely. <br> <br>
-
-        In terms of performance, it seems to always maintain 100+ FPS at minimum. <br><br>
-
-        All in all, despite how time consuming it was, I had fun doing this assignment :) <br><br>
-
-        <img src="images/funny.png">
-
-
-
-        <br><br><br><br><br>
-
-
-
-
-
-
-
-
-
-
-
-
+        The comically large stone block is supposed to be my "ground plane." -->
     </body>
 </html>

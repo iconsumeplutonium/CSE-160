@@ -67,10 +67,10 @@ class Sphere {
             }
         }
 
-        //get colors
-        for (let i = 0; i <= size * size; i++) {
-            this.colors.push(1, 1, 1, 1);
-        }
+        // //get colors
+        // for (let i = 0; i <= size * size; i++) {
+        //     this.colors.push(1, 1, 1, 1);
+        // }
 
         //console.log(this.colors)
         this.normalMatrix = new Matrix4();
@@ -86,6 +86,7 @@ class Sphere {
 
     render() {
         gl.uniformMatrix4fv(u_ModelMatrix, false, this.matrix.elements);
+        gl.uniform3fv(u_FragColor, new Float32Array([1, 0, 0]));
 
         this.normalMatrix.setInverseOf(this.matrix);
         this.normalMatrix.transpose();
@@ -103,7 +104,7 @@ class Sphere {
         let colorBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.colors), gl.DYNAMIC_DRAW);
-        gl.vertexAttribPointer(a_Color, 4, gl.FLOAT, false, 0, 0);        
+        gl.vertexAttribPointer(a_Color, 4, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(a_Color);
 
         let normalBuffer = gl.createBuffer();
@@ -113,5 +114,9 @@ class Sphere {
         gl.enableVertexAttribArray(a_Normal);
 
         gl.drawArrays(gl.TRIANGLES, 0, n);
+
+        gl.deleteBuffer(vertexBuffer);
+        gl.deleteBuffer(colorBuffer);
+        gl.deleteBuffer(normalBuffer);
     }
 }
