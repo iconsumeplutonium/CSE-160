@@ -1,6 +1,7 @@
 class Cube {
-    constructor(blockType = "dirt_block", color = [0, 0, 1, 1]) {
+    constructor(blockType = "dirt_block", color, specularCoeff) {
         this.color = color;
+        this.specularCoeff = specularCoeff;
         this.matrix = new Matrix4();
         this.normalMatrix = new Matrix4();
 
@@ -71,7 +72,12 @@ class Cube {
             return;
 
         gl.uniformMatrix4fv(u_ModelMatrix, false, this.matrix.elements);
-        gl.uniform3fv(a_FragColor, new Float32Array([0, 0, 1, 1]));
+        gl.uniform4fv(u_FragColor, new Float32Array(this.color));
+
+        //because of some fucking javascript bullshit, passing in 0 with uniform1f/1fv completely breaks specular highlighting
+        //harcoding 0.0 in the fragment shader? works fine! passing in 0.0 via a uniform float? everything dies
+        //the only way I can "turn off" specular highlighting is to set the exponent to a super high number so that the highlight is invisible
+        gl.uniform1f(u_SpecularExponent, (this.specularCoeff == 0) ? 9999999999 : this.specularCoeff);
 
         this.normalMatrix.setInverseOf(this.matrix);
         this.normalMatrix.transpose();

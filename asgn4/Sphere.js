@@ -1,6 +1,8 @@
 class Sphere {
-    constructor(size, matrix, radius) {
+    constructor(matrix, color, specularCoeff) {
         this.matrix = matrix;
+        this.color = color;
+        this.specularCoeff = specularCoeff
 
 
         let d = Math.PI / 10;
@@ -39,7 +41,9 @@ class Sphere {
 
     render() {
         gl.uniformMatrix4fv(u_ModelMatrix, false, this.matrix.elements);
-        //gl.uniform3fv(u_FragColor, new Float32Array([0, 1, 1, 1]));
+        gl.uniform4fv(u_FragColor, new Float32Array(this.color));
+        gl.uniform1fv(u_SpecularExponent, new Float32Array([this.specularCoeff]));
+
 
         this.normalMatrix.setInverseOf(this.matrix);
         this.normalMatrix.transpose();
@@ -66,11 +70,11 @@ class Sphere {
         gl.vertexAttribPointer(a_Normal, 3, gl.FLOAT, false, 0, 0);        
         gl.enableVertexAttribArray(a_Normal);
 
-        let colorBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.colors), gl.DYNAMIC_DRAW);
-        gl.vertexAttribPointer(a_FragColor, 3, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(a_FragColor);
+        // let colorBuffer = gl.createBuffer();
+        // gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+        // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.colors), gl.DYNAMIC_DRAW);
+        // gl.vertexAttribPointer(u_FragColor, 3, gl.FLOAT, false, 0, 0);
+        // gl.enableVertexAttribArray(u_FragColor);
 
         gl.drawArrays(gl.TRIANGLES, 0, n);
 

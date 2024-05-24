@@ -14,6 +14,8 @@ let compass;
 
 let lightSliders = [];
 
+let lightColorPicker;
+
 function connectAllUIElements() {
     fpsCounter = document.getElementById("fps");
 
@@ -40,31 +42,9 @@ function connectAllUIElements() {
     lightSliders[0] = document.getElementById(`lightXslider`);
     lightSliders[1] = document.getElementById(`lightYslider`);
     lightSliders[2] = document.getElementById(`lightZslider`);
-}
 
-function titlecaseBlockName(block) {
-    switch (block) {
-        case "grass_block":
-            return "Grass Block";
-        case "dirt":
-            return "Dirt";
-        case "stone_block":
-            return "Stone";
-        case "cobblestone":
-            return "Cobblestone";
-        case "sand":
-            return "Sand";
-        case "gravel":
-            return "Gravel";
-        case "oak_planks":
-            return "Oak Planks";
-        case "bedrock":
-            return "Bedrock";
-        case "bricks":
-            return "Bricks";
-    }
+    lightColorPicker = document.getElementById("lightColorPicker");
 }
-
 
 function resetSlider(name) {
     let angle = 0;
@@ -90,13 +70,6 @@ function updateFOV() {
     camera.fov = newFov;
     fovText.innerText = `FOV: ${newFov}`;
     camera.applyProjectionMatrix();
-    renderAllShapes();
-}
-
-function updateRenderDist() {
-    let newRenderDist = parseInt(renderDistSlider.value);
-    renderDistance = newRenderDist;
-    renderDistanceText.innerText = `Render Distance: ${newRenderDist} chunks`;
     renderAllShapes();
 }
 
@@ -134,14 +107,17 @@ function updateCompass() {
     }
 }
 
-function randomSeed() {
-    worldSeed = Math.floor(Math.random() * 4294967295);
-    seedBox.value = worldSeed;
-    updateSeed();
+function getLightColor() {
+    let color = lightColorPicker.value;
+
+    let r = parseInt(color.slice(1, 3), 16) / 255;
+    let g = parseInt(color.slice(3, 5), 16) / 255;
+    let b = parseInt(color.slice(5, 7), 16) / 255;
+
+    return new Vector3([r, g, b]);
 }
 
-function updateSeed() {
-    worldSeed = parseInt(seedBox.value)
-    terrainChunkDict.clear();
-    main(false);
+function setRenderMode(value) {
+    console.log(value);
+    gl.uniform1i(u_RenderingMode, value);
 }

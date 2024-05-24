@@ -32,7 +32,14 @@
 
                 <p style="margin-bottom: 0px; padding: 0px;" id="lightZtext">Light Z</p>
                 <input type="range" min="-25" max="25" value="0" id="lightZslider" oninput="">
-                <button onclick="resetSlider('lightZslider')">Reset</button>
+                <button onclick="resetSlider('lightZslider')">Reset</button> <br><br>
+
+                <label style="margin-bottom: 0px; padding: 0px;" for="lightColorPicker">Light Color</label>
+                <input type="color" name="lightColorPicker" id="lightColorPicker"> <br><br>
+
+                <button onclick="setRenderMode(0)">Render Normals</button> <br><br>
+                <button onclick="setRenderMode(1)">Lighting Off</button> <br><br>
+                <button onclick="setRenderMode(5)">Lighting On</button> <br><br>
             </div>
 
 
