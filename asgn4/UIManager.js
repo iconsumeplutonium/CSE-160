@@ -6,17 +6,13 @@ let chunkCoordDisplay;
 let fovSlider;
 let fovText;
 
-let renderDistSlider;
-let renderDistanceText;
-
 let mouseSensitivitySlider;
 let mouseSensitivityText;
 let sensitivity = 6;
 
 let compass;
 
-let seedBox;
-let worldSeed;
+let lightSliders = [];
 
 function connectAllUIElements() {
     fpsCounter = document.getElementById("fps");
@@ -41,6 +37,9 @@ function connectAllUIElements() {
     compass.style.color = 'blue';
     updateCompass();
 
+    lightSliders[0] = document.getElementById(`lightXslider`);
+    lightSliders[1] = document.getElementById(`lightYslider`);
+    lightSliders[2] = document.getElementById(`lightZslider`);
 }
 
 function titlecaseBlockName(block) {
@@ -73,10 +72,6 @@ function resetSlider(name) {
         case "fovSlider":
             fovSlider.value = 30;
             updateFOV();
-            return;
-        case "renderDistSlider":
-            renderDistSlider.value = 2;
-            updateRenderDist();
             return;
         case "mouseSensitivitySlider":
             mouseSensitivitySlider.value = 200;

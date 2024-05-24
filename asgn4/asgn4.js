@@ -13,11 +13,16 @@ var VSHADER_SOURCE = `
 
     attribute vec2 a_UV;
     varying vec2 v_UV;
+
+    // uniform vec3 a_FragColor;
+    // varying vec3 v_FragColor;
+
     void main() {
         gl_Position = u_ProjectionMatrix * u_ViewMatrix * u_ModelMatrix * a_Position;
         v_UV = a_UV;
         v_Position = vec3(u_ModelMatrix * a_Position);
         v_Normal = normalize(vec3(u_NormalMatrix * a_Normal));
+        //v_FragColor = a_FragColor;
     }`;
 
 var FSHADER_SOURCE = `
@@ -25,11 +30,11 @@ var FSHADER_SOURCE = `
     varying vec2 v_UV;
     varying vec3 v_Normal;
 
-    uniform vec3 u_FragColor;
+    uniform vec3 a_FragColor;
     uniform sampler2D u_Sampler0;
 
     uniform vec3 u_LightPos;
-    uniform vec3 v_Position;
+    varying vec3 v_Position;
 
     uniform vec3 u_CameraPos;
 
@@ -44,17 +49,18 @@ var FSHADER_SOURCE = `
         vec3 k_s = vec3(0.5, 0.5, 0.5);
 
         vec3 diffuse = k_d * max(dot(L, N), 0.0);
-        vec3 ambient = k_a * u_FragColor;
-        vec3 specular = k_s * pow(max(dot(R, V), 0.0), 20.0) * u_FragColor;
+        vec3 ambient = k_a * a_FragColor;
+        vec3 specular = k_s * pow(max(dot(R, V), 0.0), 20.0) * a_FragColor;
 
         gl_FragColor = texture2D(u_Sampler0, v_UV);
         gl_FragColor = vec4(diffuse + ambient + specular, 1.0);
+        //gl_FragColor = vec4(u_FragColor, 1.0);
         
     }`;
 
 
 let canvas, gl;
-let a_Position, a_Color, a_UV, textureID, u_FragColor, a_Normal;
+let a_Position, a_Color, a_UV, textureID, a_FragColor, a_Normal;
 let u_GlobalRotationMatrix, u_ModelMatrix, u_ProjectionMatrix, u_ViewMatrix, u_NormalMatrix;
 let u_LightPos, u_CameraPos;
 let u_Sampler0, u_Sampler1, u_Sampler2, u_Sampler3;
@@ -92,11 +98,11 @@ function connectVariablesToGLSL() {
         return;
     }
 
-    a_Color = gl.getAttribLocation(gl.program, 'a_Color');
-    if (!a_Color) {
-        console.log('Failed to get the storage location of v_Color');
-        return;
-    }
+    // a_Color = gl.getAttribLocation(gl.program, 'a_Color');
+    // if (!a_Color) {
+    //     console.log('Failed to get the storage location of v_Color');
+    //     return;
+    // }
 
     // u_GlobalRotationMatrix = gl.getUniformLocation(gl.program, 'u_GlobalRotationMatrix');
     // if (!u_GlobalRotationMatrix) {
@@ -161,9 +167,9 @@ function connectVariablesToGLSL() {
         return;
     }
 
-    u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
-    if (!u_FragColor) {
-        console.log('failed to get storage location of u_FragColor');
+    a_FragColor = gl.getUniformLocation(gl.program, 'a_FragColor');
+    if (!a_FragColor) {
+        console.log('failed to get storage location of a_FragColor');
         return;
     }
 }
@@ -227,7 +233,7 @@ function main(firstStart = true) {
     for (let i = 0; i <= 5; i++)
         skybox[i] = new Cube("skybox");
 
-    //displaySkybox();
+    displaySkybox();
 
     if (firstStart)
         playerController();
@@ -235,11 +241,16 @@ function main(firstStart = true) {
 
 let crosshairCube;
 let c = new Cube();
-c.matrix.setTranslate(1, 0, 0);
-c.matrix.setRotate(45, 1, 1, 1)
+c.matrix.setTranslate(0, 0, -2);
+c.matrix.rotate(45, 1, 1, 1)
 c.texture = GetUVsForTexture("grass_block");
+//c.color = [0, 0, 1, 1];
 
 let sphere = new Sphere(15, new Matrix4().setTranslate(0, 0, 2), 1);
+
+let lightCube = new Cube();
+lightCube.matrix.setTranslate(-7, 5, 0);
+//lightCube.color = [1, 1, 0, 1];
 
 function renderAllShapes() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -264,14 +275,17 @@ function renderAllShapes() {
         mouseDelta.y = 0;
     } 
 
-
-    //gl.uniformMatrix4fv(u_GlobalRotationMatrix, false, glob.elements);
-    gl.uniform3fv(u_LightPos, new Float32Array([0, 10, 0]));
+//lightCube.matrix.multiplyVector3(new Vector3([-7, 5, 0])).elements
+   
+    gl.uniform3fv(u_LightPos, new Float32Array([lightSliders[0].value, lightSliders[1].value, lightSliders[2].value]));  // ));
     gl.uniform3fv(u_CameraPos, camera.eye.elements);
 
-    //displaySkybox();
+    lightCube.matrix.setTranslate(lightSliders[0].value, lightSliders[1].value, lightSliders[2].value);
+
+    displaySkybox();
     c.renderFast();
-    sphere.render();
+    //sphere.render();
+    lightCube.renderFast();
 
     
     
@@ -318,6 +332,8 @@ function displaySkybox() {
     skybox[5].matrix.setTranslate(camera.eye.x, camera.eye.y, camera.eye.z - 50);
     skybox[5].matrix.scale(100, 100, 0.1);
 
-    for (let i = 0; i <= 5; i++)
+    for (let i = 0; i <= 5; i++) {
+        skybox[i].color = [0, 1, 1, 1];
         skybox[i].renderFast();
+    }
 }

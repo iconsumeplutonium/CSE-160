@@ -1,11 +1,8 @@
 class Cube {
-    constructor(blockType) {
-        this.color = null;
+    constructor(blockType = "dirt_block", color = [0, 0, 1, 1]) {
+        this.color = color;
         this.matrix = new Matrix4();
         this.normalMatrix = new Matrix4();
-        this.coordinatesInChunk = null;
-        this.isAir = false; //if true, this block is skipped in chunk rendering (represents a deleted block)
-        this.isFoliage = false; //if true, this block is skipped in rendering if disable foliage option is selected
 
         let cubeSize = 1;
         this.coordinates = [
@@ -45,13 +42,18 @@ class Cube {
 
 
         this.normals = [];
-        this.normals.push(0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1);  //front
+        this.normals.push(0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1);  //front
         this.normals.push(1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0);  //right
-        this.normals.push(0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1);  //back
+        this.normals.push(0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1);  //back
         this.normals.push(-1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0);  //left
         this.normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0);  //top
         this.normals.push(0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0); //bottom
 
+        this.colors = [];
+        for (let i = 0; i < 36; i++)
+            this.colors =  this.colors.concat(this.color);
+
+        console.log(this.color);
 
     }
 
@@ -69,7 +71,7 @@ class Cube {
             return;
 
         gl.uniformMatrix4fv(u_ModelMatrix, false, this.matrix.elements);
-        gl.uniform3fv(u_FragColor, new Float32Array([0, 0, 1]));
+        gl.uniform3fv(a_FragColor, new Float32Array([0, 0, 1, 1]));
 
         this.normalMatrix.setInverseOf(this.matrix);
         this.normalMatrix.transpose();
@@ -106,6 +108,12 @@ class Cube {
         gl.vertexAttribPointer(a_Normal, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(a_Normal);
 
+
+        // let colorBuffer = gl.createBuffer();
+        // gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+        // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.colors), gl.DYNAMIC_DRAW);
+        // gl.vertexAttribPointer(a_FragColor, 3, gl.FLOAT, false, 0, 0);
+        // gl.enableVertexAttribArray(a_FragColor);
 
 
 

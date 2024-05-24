@@ -14,11 +14,25 @@
 
                 <p style="margin-bottom: 0px; padding: 0px;" id="fovText">FOV</p>
                 <input type="range" min="0" max="60" value="30" class="slider" id="fovSlider" oninput="updateFOV()">
-                <button class="btn-minecraft" onclick="resetSlider('fovSlider')">Reset</button>
+                <button onclick="resetSlider('fovSlider')">Reset</button>
 
                 <p style="margin-bottom: 0px; padding: 0px;" id="mouseSensitivityText">Mouse Sensitivity</p>
                 <input type="range" min="125" max="1000" value="250" class="slider" id="mouseSensitivitySlider" oninput="updateMouseSensitivity()">
-                <button class="btn-minecraft" onclick="resetSlider('mouseSensitivitySlider')">Reset</button>
+                <button onclick="resetSlider('mouseSensitivitySlider')">Reset</button> 
+                
+                <br><br><br><br>
+
+                <p style="margin-bottom: 0px; padding: 0px;" id="lightXtext">Light X</p>
+                <input type="range" min="-25" max="25" value="0" id="lightXslider" oninput="">
+                <button onclick="resetSlider('lightXslider')">Reset</button>
+
+                <p style="margin-bottom: 0px; padding: 0px;" id="lightYtext">Light Y</p>
+                <input type="range" min="-25" max="25" value="0" id="lightYslider" oninput="">
+                <button onclick="resetSlider('lightYslider')">Reset</button>
+
+                <p style="margin-bottom: 0px; padding: 0px;" id="lightZtext">Light Z</p>
+                <input type="range" min="-25" max="25" value="0" id="lightZslider" oninput="">
+                <button onclick="resetSlider('lightZslider')">Reset</button>
             </div>
 
 
