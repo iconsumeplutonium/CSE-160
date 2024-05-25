@@ -1,7 +1,6 @@
 let fpsCounter;
 
 let playerCoordDisplay = [];
-let chunkCoordDisplay;
 
 let fovSlider;
 let fovText;
@@ -17,14 +16,17 @@ let lightSliders = [];
 let lightColorPicker;
 let lightSelector;
 
+let spotlightAngleSlider, spotlightAngleText;
+let spotlightFalloffSlider, spotlightFalloffText;
+
+let enableLightRotationCheckbox;
+
 function connectAllUIElements() {
     fpsCounter = document.getElementById("fps");
 
     playerCoordDisplay[0] = document.getElementById(`playerCoordX`);
     playerCoordDisplay[1] = document.getElementById(`playerCoordY`);
     playerCoordDisplay[2] = document.getElementById(`playerCoordZ`);
-
-    chunkCoordDisplay = document.getElementById("chunkCoords");
 
     fovSlider = document.getElementById("fovSlider");
     fovText = document.getElementById("fovText");
@@ -46,6 +48,16 @@ function connectAllUIElements() {
 
     lightColorPicker = document.getElementById("lightColorPicker");
     lightSelector = document.getElementById("lightSelector");
+
+    spotlightAngleSlider = document.getElementById("spotlightAngleSlider");
+    spotlightAngleText = document.getElementById("spotlightAngleText");
+    updateSpotlightAngleText();
+
+    spotlightFalloffSlider = document.getElementById("spotlightFalloffSlider");
+    spotlightFalloffText = document.getElementById("spotlightFalloffText");
+    updateSpotlightFalloffText();
+
+    enableLightRotationCheckbox = document.getElementById("enableLightRotationCheckbox");
 }
 
 function resetSlider(name) {
@@ -62,6 +74,14 @@ function resetSlider(name) {
         case "lightYslider":
             lightSliders[1].value = 25;
             break;
+        case "spotlightAngleSlider":
+            spotlightAngleSlider.value = 50;
+            updateSpotlightAngleText();
+            break;
+        case "spotlightFalloffSlider":
+            spotlightFalloffSlider.value = 57;
+            updateSpotlightFalloffText();
+            break;            
         default:
             document.getElementById(name).value = 0;
             break;
@@ -125,4 +145,14 @@ function getLightColor() {
 function setRenderMode(value) {
     console.log(value);
     gl.uniform1i(u_RenderingMode, value);
+}
+
+function updateSpotlightAngleText() {
+    let angle = 90 - Math.acos(parseFloat(spotlightAngleSlider.value) / 100) * (180 / Math.PI);
+    spotlightAngleText.innerText = `Spotlight Angle: ${angle.toFixed(2)}°`;
+}
+
+function updateSpotlightFalloffText() {
+    let angle = spotlightFalloffSlider.value / 10;
+    spotlightFalloffText.innerText = `Spotlight Falloff Exponent: ${angle.toFixed(2)}`;
 }

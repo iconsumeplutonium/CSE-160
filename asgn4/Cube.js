@@ -1,5 +1,5 @@
 class Cube {
-    constructor(blockType = "dirt_block", color, specularCoeff) {
+    constructor(color, specularCoeff) {
         this.color = color;
         this.specularCoeff = specularCoeff;
         this.matrix = new Matrix4();
@@ -17,9 +17,6 @@ class Cube {
             [(cubeSize / 2), (cubeSize / 2), (cubeSize / 2)],
         ];
 
-
-        this.texture = GetUVsForTexture(blockType);
-        this.useColor = false;
 
         this.allVerts = [];
 
@@ -43,18 +40,16 @@ class Cube {
 
 
         this.normals = [];
-        this.normals.push(0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1);  //front
-        this.normals.push(1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0);  //right
-        this.normals.push(0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1);  //back
-        this.normals.push(-1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0);  //left
-        this.normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0);  //top
-        this.normals.push(0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0); //bottom
+        this.normals.push( 0,  0, -1,  0,  0, -1,  0,  0, -1,  0,  0, -1,  0,  0, -1,  0,  0, -1);  //front
+        this.normals.push( 1,  0,  0,  1,  0,  0,  1,  0,  0,  1,  0,  0,  1,  0,  0,  1,  0,  0);  //right
+        this.normals.push( 0,  0,  1,  0,  0,  1,  0,  0,  1,  0,  0,  1,  0,  0,  1,  0,  0,  1);  //back
+        this.normals.push(-1,  0,  0, -1,  0,  0, -1,  0,  0, -1,  0,  0, -1,  0,  0, -1,  0,  0);  //left
+        this.normals.push( 0,  1,  0,  0,  1,  0,  0,  1,  0,  0,  1,  0,  0,  1,  0,  0,  1,  0);  //top
+        this.normals.push( 0, -1,  0,  0, -1,  0,  0, -1,  0,  0, -1,  0,  0, -1,  0,  0, -1,  0);  //bottom
 
-        this.colors = [];
-        for (let i = 0; i < 36; i++)
-            this.colors =  this.colors.concat(this.color);
-
-        console.log(this.color);
+        // this.colors = [];
+        // for (let i = 0; i < 36; i++)
+        //     this.colors =  this.colors.concat(this.color);
 
     }
 
@@ -68,9 +63,6 @@ class Cube {
     }
     
     renderFast() {
-        if (this.isAir)
-            return;
-
         gl.uniformMatrix4fv(u_ModelMatrix, false, this.matrix.elements);
         gl.uniform4fv(u_FragColor, new Float32Array(this.color));
 
@@ -95,39 +87,15 @@ class Cube {
         gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(a_Position);
 
-
-        // let uvBuffer = gl.createBuffer();
-        // if (!uvBuffer) {
-        //     console.log('failed to make uv buffer obj');
-        //     return -1;
-        // }
-        // let uvsF32 = new Float32Array(this.texture);
-        // gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
-        // gl.bufferData(gl.ARRAY_BUFFER, uvsF32, gl.DYNAMIC_DRAW);
-        // gl.vertexAttribPointer(a_UV, 2, gl.FLOAT, false, 0, 0);
-        // gl.enableVertexAttribArray(a_UV);
-
-
         let normalBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.normals), gl.DYNAMIC_DRAW);
         gl.vertexAttribPointer(a_Normal, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(a_Normal);
 
-
-        // let colorBuffer = gl.createBuffer();
-        // gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-        // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.colors), gl.DYNAMIC_DRAW);
-        // gl.vertexAttribPointer(a_FragColor, 3, gl.FLOAT, false, 0, 0);
-        // gl.enableVertexAttribArray(a_FragColor);
-
-
-
-
         gl.drawArrays(gl.TRIANGLES, 0, this.allVerts.length / 3);
 
         gl.deleteBuffer(vertexBuffer);
-        //gl.deleteBuffer(uvBuffer);
         gl.deleteBuffer(normalBuffer);
     }
 }

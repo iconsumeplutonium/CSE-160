@@ -20,7 +20,7 @@
                 <input type="range" min="125" max="1000" value="250" class="slider" id="mouseSensitivitySlider" oninput="updateMouseSensitivity()">
                 <button onclick="resetSlider('mouseSensitivitySlider')">Reset</button> 
                 
-                <br><br><br><br>
+                <br><br><br>
 
                 <p style="margin-bottom: 0px; padding: 0px;" id="lightXtext">Light X</p>
                 <input type="range" min="-48" max="48" value="0" id="lightXslider" oninput="">
@@ -34,18 +34,26 @@
                 <input type="range" min="-48" max="48" value="0" id="lightZslider" oninput="">
                 <button onclick="resetSlider('lightZslider')">Reset</button> <br><br>
 
-                <label style="margin-bottom: 0px; padding: 0px;" for="lightColorPicker">Light Color</label>
-                <input type="color" name="lightColorPicker" id="lightColorPicker" value="#FFFFFF"> <br><br>
+                <label style="margin-bottom: 0px; padding: 0px;">Enable Light Rotation</label>
+                <input id="enableLightRotationCheckbox" type="checkbox"> <br><br>
 
-                <button onclick="setRenderMode(0)">Render Normals</button>
-                <button onclick="setRenderMode(1)">Lighting Off</button>
-                <button onclick="setRenderMode(5)">Lighting On</button> <br>
+                <label style="margin-bottom: 0px; padding: 0px;" for="lightColorPicker">Light Color</label>
+                <input type="color" name="lightColorPicker" id="lightColorPicker" value="#6A6A6A"> <br><br>
 
                 <p style="margin-bottom: 0px; padding: 0px;">Light type:</p>
                 <select id="lightSelector">
                     <option value="point">Point</option>
                     <option value="spotlight">Spotlight</option>
                 </select>
+
+                <p style="margin-bottom: 0px; padding: 0px;" id="spotlightAngleText">Spotlight Angle</p>
+                <input type="range" min="0" max="100" value="50" id="spotlightAngleSlider" oninput="updateSpotlightAngleText()">
+                <button onclick="resetSlider('spotlightAngleSlider')">Reset</button> <br>
+
+                <p style="margin-bottom: 0px; padding: 0px;" id="spotlightFalloffText">Spotlight Falloff Exponent</p>
+                <input type="range" min="0" max="400" value="180" id="spotlightFalloffSlider" oninput="updateSpotlightFalloffText()">
+                <button onclick="resetSlider('spotlightFalloffSlider')">Reset</button> <br><br>
+
             </div>
 
 
@@ -69,10 +77,6 @@
                     <p style="color: green; margin: 0; padding: 0;" id="playerCoordY">Y:</p>
                     <p style="color: blue; margin: 0; padding: 0;" id="playerCoordZ">Z:</p>
                 </div>
-                <div>
-                    <p style="margin-top: 1; margin-bottom: 0; padding: 0;">Chunk coordinates:</p>
-                    <p style="margin: 0; padding: 0;" id="chunkCoords"></p>
-                </div>
                 <div style="margin-bottom: 20px;">
                     <p style="margin-top: 1; margin-bottom: 0; padding: 0;">Direction:</p>
                     <p style="margin: 0; padding: 0;" id="compass"></p>
@@ -87,6 +91,10 @@
                     </ul>
                 </div>
 
+                <button onclick="setRenderMode(0)">Render Normals</button>
+                <button onclick="setRenderMode(1)">Lighting Off</button>
+                <button onclick="setRenderMode(5)">Lighting On</button> <br>
+
 
             </div>
         </div>
@@ -95,15 +103,10 @@
         <script src="lib/webgl-debug.js"></script>
         <script src="lib/cuon-utils.js"></script>
         <script src="lib/cuon-matrix.js"></script>
-        <script src="lib/Noise.js"></script>
-        <script src='lib/perlin.js'></script>
         <script src="UIManager.js"></script>
-        <script src="TextureAtlasManager.js"></script>
         <script src="PlayerController.js"></script>
-        <script src="InfiniteTerrain.js"></script>
         <script src="Cube.js"></script>
         <script src="Camera.js"></script>
-        <script src="Chunk.js"></script>
         <script src="Sphere.js"></script>
         <script src="asgn4.js"></script>
         <br><br>

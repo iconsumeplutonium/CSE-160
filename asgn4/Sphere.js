@@ -2,8 +2,7 @@ class Sphere {
     constructor(matrix, color, specularCoeff) {
         this.matrix = matrix;
         this.color = color;
-        this.specularCoeff = specularCoeff
-
+        this.specularCoeff = specularCoeff;
 
         let d = Math.PI / 10;
         let dd = Math.PI / 10;
@@ -42,7 +41,7 @@ class Sphere {
     render() {
         gl.uniformMatrix4fv(u_ModelMatrix, false, this.matrix.elements);
         gl.uniform4fv(u_FragColor, new Float32Array(this.color));
-        gl.uniform1fv(u_SpecularExponent, new Float32Array([this.specularCoeff]));
+        gl.uniform1f(u_SpecularExponent, (this.specularCoeff == 0) ? 9999999999 : this.specularCoeff); //to represent specular = 0. See Cube.js:72 for explanation
 
 
         this.normalMatrix.setInverseOf(this.matrix);
@@ -58,28 +57,15 @@ class Sphere {
         gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(a_Position);
 
-        // let colorBuffer = gl.createBuffer();
-        // gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-        // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.colors), gl.DYNAMIC_DRAW);
-        // gl.vertexAttribPointer(a_Color, 4, gl.FLOAT, false, 0, 0);
-        // gl.enableVertexAttribArray(a_Color);
-
         let normalBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.normals), gl.DYNAMIC_DRAW);
         gl.vertexAttribPointer(a_Normal, 3, gl.FLOAT, false, 0, 0);        
         gl.enableVertexAttribArray(a_Normal);
 
-        // let colorBuffer = gl.createBuffer();
-        // gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-        // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.colors), gl.DYNAMIC_DRAW);
-        // gl.vertexAttribPointer(u_FragColor, 3, gl.FLOAT, false, 0, 0);
-        // gl.enableVertexAttribArray(u_FragColor);
-
         gl.drawArrays(gl.TRIANGLES, 0, n);
 
         gl.deleteBuffer(vertexBuffer);
-        //gl.deleteBuffer(colorBuffer);
         gl.deleteBuffer(normalBuffer);
     }
 }

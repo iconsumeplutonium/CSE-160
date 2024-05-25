@@ -1,5 +1,4 @@
 var VSHADER_SOURCE = `
-    uniform mat4 u_GlobalRotationMatrix;
     uniform mat4 u_ModelMatrix;
     uniform mat4 u_ProjectionMatrix;
     uniform mat4 u_ViewMatrix;
@@ -39,12 +38,14 @@ var FSHADER_SOURCE = `
 
     uniform int u_RenderingMode;
     uniform int u_LightType;
+    uniform float u_SpotlightAngleThreshold;
+    uniform float u_SpotlightFalloffExponent;
 
     void main() {
         vec3 L = normalize(u_LightPos - v_Position);
         vec3 N = normalize(v_Normal);
         vec3 R = normalize(2.0 * dot(L, N) * N - L);
-        vec3 V = normalize(u_CameraPos);
+        vec3 V = normalize(u_CameraPos - v_Position);
 
         vec3 k_d = vec3(0.5, 0.5, 0.5);
         vec3 k_a = vec3(0.25, 0.25, 0.25);
@@ -57,16 +58,16 @@ var FSHADER_SOURCE = `
         } else {
 
             vec3 diffuse = k_d * max(dot(L, N), 0.0) * vec3(u_FragColor);
-            vec3 ambient = k_a * u_LightColor;
+            vec3 ambient = k_a * (vec3(u_FragColor) + u_LightColor);
             vec3 specular = k_s * pow(max(dot(R, V), 0.0), u_SpecularExponent) * u_LightColor;
             
             vec3 spotDir = vec3(0, -1, 0);
             float angle = dot(-L, spotDir);
             float spotFactor = 0.0;
-            if (angle > 0.5)
-                spotFactor = pow(angle, 18.0);
+            if (angle > u_SpotlightAngleThreshold)
+                spotFactor = pow(angle, u_SpotlightFalloffExponent);
 
-            //if point light
+            //if point light, all objects should be equally lit, so ignore spotFactor
             if (u_LightType == 1) 
                 spotFactor = 1.0;
 
@@ -84,17 +85,11 @@ var FSHADER_SOURCE = `
 
 
 let canvas, gl;
-let a_Position, a_Color, a_UV, textureID, u_FragColor, a_Normal;
-let u_GlobalRotationMatrix, u_ModelMatrix, u_ProjectionMatrix, u_ViewMatrix, u_NormalMatrix;
-let u_LightPos, u_CameraPos, u_LightColor, u_SpecularExponent, u_RenderingMode, u_LightType;
-let u_Sampler0;
-let u_Samplers = [];
-let instancingExtension;
-let globalRotx, globalRoty, globalRotz;
-
+let a_Position, a_UV, textureID, u_FragColor, a_Normal;
+let u_ModelMatrix, u_ProjectionMatrix, u_ViewMatrix, u_NormalMatrix;
+let u_LightPos, u_CameraPos, u_LightColor, u_SpecularExponent, u_RenderingMode, u_LightType, u_SpotlightAngleThreshold, u_SpotlightFalloffExponent;
 let mouseDelta = new Vector3();
 let camera;
-const chunkSize = 12;
 let skybox = []
 
 function setupWebGL() {
@@ -208,85 +203,111 @@ function connectVariablesToGLSL() {
         console.log('failed to get storage location of u_LightType');
         return;
     }
+
+    u_SpotlightAngleThreshold = gl.getUniformLocation(gl.program, 'u_SpotlightAngleThreshold');
+    if (!u_SpotlightAngleThreshold) {
+        console.log('failed to get storage location of u_SpotlightAngleThreshold');
+        return;
+    }
+
+    u_SpotlightFalloffExponent = gl.getUniformLocation(gl.program, 'u_SpotlightFalloffExponent');
+    if (!u_SpotlightFalloffExponent) {
+        console.log('failed to get storage location of u_SpotlightFalloffExponent');
+        return;
+    }
 }
 
 
-let glob;
-function main(firstStart = true) {
+function main() {
     setupWebGL();
     connectVariablesToGLSL();
 
     camera = new Camera(90);
-
-    initTextures(0);
 
     gl.clearColor(0, 0, 0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     connectAllUIElements();
 
-    if (firstStart) {
+    document.addEventListener('keydown', function(ev) {
+             if (ev.keyCode == 87) keys.w      = true;
+        else if (ev.keyCode == 83) keys.s      = true;
+        else if (ev.keyCode == 65) keys.a      = true;
+        else if (ev.keyCode == 68) keys.d      = true;
+        else if (ev.keyCode == 32) keys.space  = true;
+        else if (ev.keyCode == 16) keys.lshift = true;
+    });
 
-        document.addEventListener('keydown', function(ev) {
-                if (ev.keyCode == 87) keys.w      = true;
-            else if (ev.keyCode == 83) keys.s      = true;
-            else if (ev.keyCode == 65) keys.a      = true;
-            else if (ev.keyCode == 68) keys.d      = true;
-            else if (ev.keyCode == 32) keys.space  = true;
-            else if (ev.keyCode == 16) keys.lshift = true;
-        });
+    document.addEventListener('keyup', function(ev) {
+             if (ev.keyCode == 87) keys.w      = false;
+        else if (ev.keyCode == 83) keys.s      = false;
+        else if (ev.keyCode == 65) keys.a      = false;
+        else if (ev.keyCode == 68) keys.d      = false;
+        else if (ev.keyCode == 32) keys.space  = false;
+        else if (ev.keyCode == 16) keys.lshift = false;
+    });
 
-        document.addEventListener('keyup', function(ev) {
-                if (ev.keyCode == 87) keys.w      = false;
-            else if (ev.keyCode == 83) keys.s      = false;
-            else if (ev.keyCode == 65) keys.a      = false;
-            else if (ev.keyCode == 68) keys.d      = false;
-            else if (ev.keyCode == 32) keys.space  = false;
-            else if (ev.keyCode == 16) keys.lshift = false;
-        });
+    document.addEventListener('mousemove', function(ev) {
+        let x = ev.movementX;
+        let y = ev.movementY;
 
-        document.addEventListener('mousemove', function(ev) {
-            let x = ev.movementX;
-            let y = ev.movementY;
+        mouseDelta = new Vector3([x, y, 1]).normalize();
+    })
 
-            mouseDelta = new Vector3([x, y, 1]).normalize();
+    canvas.addEventListener('mousedown', function(event) {
+        canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
+        canvas.requestPointerLock();
+    });
 
-        })
 
-        canvas.addEventListener('mousedown', function(event) {
-            canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
-            canvas.requestPointerLock();
-        });
+    let c = new Cube([1, 0, 0, 1], 20);
+    c.matrix.setTranslate(0, -48, -2);
+    c.matrix.rotate(45, 1, 1, 1)
+    g_cubes.push(c);
 
-    }
+    let tower1 = new Cube([0.0, 0.0, 1.0, 1.0], 20);
+    tower1.matrix.setTranslate(25, -30, 25);
+    tower1.matrix.scale(10, 40, 10);
+    g_cubes.push(tower1);
 
+    let tower2 = new Cube([1.0, 1.0, 0.0, 1.0], 20);
+    tower2.matrix.setTranslate(-25, -40, -25);
+    tower2.matrix.scale(10, 20, 10);
+    g_cubes.push(tower2);
+
+    let tower3 = new Cube([1.0, 0.0, 1.0, 1.0], 20);
+    tower3.matrix.setTranslate(-25, -35, 25);
+    tower3.matrix.scale(10, 30, 10);
+    g_cubes.push(tower3);
+
+    let tower4 = new Cube([0.0, 1.0, 0.0, 1.0], 20);
+    tower4.matrix.setTranslate(25, -45, -25);
+    tower4.matrix.scale(10, 10, 10);
+    g_cubes.push(tower4);
+
+    g_spheres.push(new Sphere(new Matrix4().setTranslate( 0, -48,  2), [1, 0, 1, 1],   0.0));
+    g_spheres.push(new Sphere(new Matrix4().setTranslate( 5, -48, -5), [1, 1, 0, 1],  10.0));
+    g_spheres.push(new Sphere(new Matrix4().setTranslate(-5, -48,  5), [0, 1, 1, 1],  20.0));
+    g_spheres.push(new Sphere(new Matrix4().setTranslate(-5, -48, -5), [0, 0, 1, 1], 100.0));
 
     for (let i = 0; i <= 5; i++)
-        skybox[i] = new Cube("skybox", [1, 1, 1, 1], 0);
-
-    if (firstStart)
-        playerController();
+        skybox[i] = new Cube([1, 1, 1, 1], 0);
 
     gl.uniform1i(u_RenderingMode, 5);
+    playerController();    
 }
 
-let c = new Cube(undefined, [1, 0, 0, 1], 20);
-c.matrix.setTranslate(0, 0, -2);
-c.matrix.rotate(45, 1, 1, 1)
-c.texture = GetUVsForTexture("grass_block");
 
-let sphere = new Sphere(new Matrix4().setTranslate(0, 0, 2), [0, 1, 1, 1], 20.0);
-
-let lightCube = new Cube(undefined, [1, 1, 0, 1]);
+let lightCube = new Cube([1, 1, 0, 1], 10.0);
 lightCube.matrix.setTranslate(-7, 5, 0);
 
-function renderAllShapes() {
+let g_cubes = [];
+let g_spheres = [];
+function renderAllShapes(time) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     //only if mouseDelta is declared and the canvas is selected
     if (mouseDelta && document.pointerLockElement === canvas) {
-        //const EPSILON = 0.001;
-
         //Left and right
         let m = new Matrix4();
         m.setRotate(mouseDelta.x * -sensitivity * deltaTime, camera.up.x, camera.up.y, camera.up.z);
@@ -303,20 +324,33 @@ function renderAllShapes() {
         mouseDelta.y = 0;
     } 
    
-    gl.uniform3fv(u_LightPos, new Float32Array([lightSliders[0].value, lightSliders[1].value, lightSliders[2].value]));  // ));
+    let lightPos;
+    if (enableLightRotationCheckbox.checked) {
+        const slowdown = 0.0025;
+        const radius = 16;
+        lightPos = new Vector3([Math.cos(time * slowdown) * radius, lightSliders[1].value, Math.sin(time * slowdown) * radius]);
+    } else
+        lightPos = new Vector3([lightSliders[0].value, lightSliders[1].value, lightSliders[2].value]);
+
+    gl.uniform3fv(u_LightPos, new Float32Array(lightPos.elements));
     gl.uniform3fv(u_CameraPos, camera.eye.elements);
     gl.uniform1i(u_LightType, (lightSelector.value == "spotlight") ? 0 : 1);
+    gl.uniform1f(u_SpotlightAngleThreshold,  1 - (spotlightAngleSlider.value / 100));
+    gl.uniform1f(u_SpotlightFalloffExponent, spotlightFalloffSlider.value / 10);
 
     let lightCol = getLightColor();
-    gl.uniform3fv(u_LightColor, new Float32Array(lightCol.elements));
-    lightCube.color = [lightCol.x, lightCol.y, lightCol.z, 1];
-
-    lightCube.matrix.setTranslate(lightSliders[0].value, lightSliders[1].value, lightSliders[2].value);
+    gl.uniform3fv(u_LightColor, new Float32Array(lightCol.elements)); //pass the color into the shader
+    lightCube.color = [lightCol.x, lightCol.y, lightCol.z, 1]; //pass the color into the class so the block itself is that color
+    lightCube.matrix.setTranslate(lightPos.x, lightPos.y, lightPos.z);
 
     displaySkybox();
-    c.renderFast();
-    sphere.render();
     lightCube.renderFast();
+
+    for (let i = 0; i < g_cubes.length; i++)
+        g_cubes[i].renderFast();
+
+    for (let i = 0; i < g_spheres.length; i++)
+        g_spheres[i].render();
 }
 
 //because I enabled backface culling, placing a super large cube around the player wont work because the inside
