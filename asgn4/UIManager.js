@@ -15,6 +15,7 @@ let compass;
 let lightSliders = [];
 
 let lightColorPicker;
+let lightSelector;
 
 function connectAllUIElements() {
     fpsCounter = document.getElementById("fps");
@@ -44,6 +45,7 @@ function connectAllUIElements() {
     lightSliders[2] = document.getElementById(`lightZslider`);
 
     lightColorPicker = document.getElementById("lightColorPicker");
+    lightSelector = document.getElementById("lightSelector");
 }
 
 function resetSlider(name) {
@@ -57,6 +59,9 @@ function resetSlider(name) {
             mouseSensitivitySlider.value = 200;
             updateMouseSensitivity();
             return;
+        case "lightYslider":
+            lightSliders[1].value = 25;
+            break;
         default:
             document.getElementById(name).value = 0;
             break;

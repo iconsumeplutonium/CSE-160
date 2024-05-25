@@ -29,14 +29,16 @@ var FSHADER_SOURCE = `
     uniform vec4 u_FragColor;
     uniform vec3 u_LightColor;
 
-    uniform sampler2D u_Sampler0;
+    //uniform sampler2D u_Sampler0;
 
     uniform vec3 u_LightPos;
     varying vec3 v_Position;
 
     uniform vec3 u_CameraPos;
     uniform float u_SpecularExponent;
+
     uniform int u_RenderingMode;
+    uniform int u_LightType;
 
     void main() {
         vec3 L = normalize(u_LightPos - v_Position);
@@ -56,15 +58,27 @@ var FSHADER_SOURCE = `
 
             vec3 diffuse = k_d * max(dot(L, N), 0.0) * vec3(u_FragColor);
             vec3 ambient = k_a * u_LightColor;
-            vec3 specular = k_s * pow(max(dot(R, V), 0.0), u_SpecularExponent) * u_LightColor;            
+            vec3 specular = k_s * pow(max(dot(R, V), 0.0), u_SpecularExponent) * u_LightColor;
+            
+            vec3 spotDir = vec3(0, -1, 0);
+            float angle = dot(-L, spotDir);
+            float spotFactor = 0.0;
+            if (angle > 0.5)
+                spotFactor = pow(angle, 18.0);
 
-            gl_FragColor = texture2D(u_Sampler0, v_UV);
-            gl_FragColor = vec4(diffuse + ambient + specular, 1.0);
+            //if point light
+            if (u_LightType == 1) 
+                spotFactor = 1.0;
+
+            gl_FragColor = vec4((diffuse + ambient + specular) * spotFactor, 1.0);
             
             float r = length(u_LightPos - v_Position);
             if (r < 1.0)
                 gl_FragColor = vec4(u_LightColor, 1.0);
-        
+            
+
+            
+
         }
     }`;
 
@@ -72,7 +86,7 @@ var FSHADER_SOURCE = `
 let canvas, gl;
 let a_Position, a_Color, a_UV, textureID, u_FragColor, a_Normal;
 let u_GlobalRotationMatrix, u_ModelMatrix, u_ProjectionMatrix, u_ViewMatrix, u_NormalMatrix;
-let u_LightPos, u_CameraPos, u_LightColor, u_SpecularExponent, u_RenderingMode;
+let u_LightPos, u_CameraPos, u_LightColor, u_SpecularExponent, u_RenderingMode, u_LightType;
 let u_Sampler0;
 let u_Samplers = [];
 let instancingExtension;
@@ -108,18 +122,6 @@ function connectVariablesToGLSL() {
         return;
     }
 
-    // a_Color = gl.getAttribLocation(gl.program, 'a_Color');
-    // if (!a_Color) {
-    //     console.log('Failed to get the storage location of v_Color');
-    //     return;
-    // }
-
-    // u_GlobalRotationMatrix = gl.getUniformLocation(gl.program, 'u_GlobalRotationMatrix');
-    // if (!u_GlobalRotationMatrix) {
-    //     console.log('Failed to get the storage location of u_GlobalRotationMatrix');
-    //     return;
-    // }
-
     u_ModelMatrix = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
     if (!u_ModelMatrix) {
         console.log('Failed to get the storage location of u_ModelMatrix');
@@ -132,14 +134,14 @@ function connectVariablesToGLSL() {
         return;
     }
 
-    for (let i = 0; i <= 0; i++) {
-        let sampler = gl.getUniformLocation(gl.program, `u_Sampler${i}`);
-        if (!sampler) {
-            console.log(`Failed to get storage location of u_Sampler${i}`);
-            return;
-        }
-        u_Samplers.push(sampler);
-    }
+    // for (let i = 0; i <= 0; i++) {
+    //     let sampler = gl.getUniformLocation(gl.program, `u_Sampler${i}`);
+    //     if (!sampler) {
+    //         console.log(`Failed to get storage location of u_Sampler${i}`);
+    //         return;
+    //     }
+    //     u_Samplers.push(sampler);
+    // }
 
     u_ProjectionMatrix = gl.getUniformLocation(gl.program, 'u_ProjectionMatrix');
     if (!u_ProjectionMatrix) {
@@ -198,6 +200,12 @@ function connectVariablesToGLSL() {
     u_RenderingMode = gl.getUniformLocation(gl.program, 'u_RenderingMode');
     if (!u_SpecularExponent) {
         console.log('failed to get storage location of u_RenderingMode');
+        return;
+    }
+
+    u_LightType = gl.getUniformLocation(gl.program, 'u_LightType');
+    if (!u_LightType) {
+        console.log('failed to get storage location of u_LightType');
         return;
     }
 }
@@ -297,6 +305,7 @@ function renderAllShapes() {
    
     gl.uniform3fv(u_LightPos, new Float32Array([lightSliders[0].value, lightSliders[1].value, lightSliders[2].value]));  // ));
     gl.uniform3fv(u_CameraPos, camera.eye.elements);
+    gl.uniform1i(u_LightType, (lightSelector.value == "spotlight") ? 0 : 1);
 
     let lightCol = getLightColor();
     gl.uniform3fv(u_LightColor, new Float32Array(lightCol.elements));
@@ -308,9 +317,6 @@ function renderAllShapes() {
     c.renderFast();
     sphere.render();
     lightCube.renderFast();
-
-    
-    //updateVisibleChunks();
 }
 
 //because I enabled backface culling, placing a super large cube around the player wont work because the inside
@@ -318,27 +324,27 @@ function renderAllShapes() {
 //to fix this, i just placed 6 planes around the player
 function displaySkybox() {
     //top
-    skybox[0].matrix.setTranslate(camera.eye.x, camera.eye.y + 50, 0 + camera.eye.z);
+    skybox[0].matrix.setTranslate(0, 50, 0);
     skybox[0].matrix.scale(100, 0.1, 100);
     skybox[0].matrix.rotate(180, 1, 0, 0);
 
     //bottom
-    skybox[1].matrix.setTranslate(camera.eye.x, camera.eye.y - 50, camera.eye.z);
+    skybox[1].matrix.setTranslate(0, -50, 0);
     skybox[1].matrix.scale(100, 0.1, 100);
     skybox[1].matrix.rotate(180, 1, 0, 0);
 
-    skybox[2].matrix.setTranslate(camera.eye.x + 50, camera.eye.y, camera.eye.z);
+    skybox[2].matrix.setTranslate(50, 0, 0);
     skybox[2].matrix.scale(0.1, 100, 100);
     skybox[2].matrix.rotate(180, 0, 1, 0);
 
-    skybox[3].matrix.setTranslate(camera.eye.x - 50, camera.eye.y, camera.eye.z);
+    skybox[3].matrix.setTranslate(-50, 0, 0);
     skybox[3].matrix.scale(0.1, 100, 100);
     skybox[3].matrix.rotate(180, 0, 1, 0);
 
-    skybox[4].matrix.setTranslate(camera.eye.x, camera.eye.y, camera.eye.z + 50);
+    skybox[4].matrix.setTranslate(0, 0, 50);
     skybox[4].matrix.scale(100, 100, 0.1);
 
-    skybox[5].matrix.setTranslate(camera.eye.x, camera.eye.y, camera.eye.z - 50);
+    skybox[5].matrix.setTranslate(0, 0, -50);
     skybox[5].matrix.scale(100, 100, 0.1);
 
     for (let i = 0; i <= 5; i++) {

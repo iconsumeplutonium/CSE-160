@@ -6,7 +6,7 @@ class Camera {
         this.up = new Vector3([0, 1, 0]);
 
         this.nearDist = 0.1;
-        this.farDist = 100;
+        this.farDist = 200;
         this.aspectRatio = canvas.width / canvas.height;
 
         this.viewMatrix = new Matrix4().setIdentity();
