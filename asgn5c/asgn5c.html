@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>asgn5c</title>
+        <link rel="shortcut icon" href="#"> <!-- to silence the stupid favicon not found error-->
+        <script type="importmap">
+            {
+              "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@v0.163.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/"
+              }
+            }
+        </script>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+
+    <body>
+        <canvas id="webgl" width="1280" height="720">
+            <div class="split">
+                <div id="view1" tabindex="1"></div>
+                <div id="view2" tabindex="2"></div>
+             </div>
+        </canvas>
+
+        <script src="MinMaxGUIHelper.js"></script>
+        <script type="module" src="PlayerController.js"></script>
+        <script type="module" src="CubeSphere.js"></script>
+        <script type="module" src="asgn5c.js"></script>
+        
+
+        <p id="fpsCounter">FPS: </p>
+        
+
+    </body>
+</html>
