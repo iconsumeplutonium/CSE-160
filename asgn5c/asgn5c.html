@@ -26,11 +26,21 @@
         <script src="MinMaxGUIHelper.js"></script>
         <script type="module" src="PlayerController.js"></script>
         <script type="module" src="CubeSphere.js"></script>
+        <script type="module" src="UIManager.js"></script>
+        <script>var exports = {}</script>
+        <script type="module" src="simplex-noise.js"></script>
+        <script src="perlin.js"></script>
+        <script src="Noise.js"></script>
         <script type="module" src="asgn5c.js"></script>
         
 
         <p id="fpsCounter">FPS: </p>
-        
+
+        <input id="wireframeViewCheckbox" type="checkbox">
+        <label>Use wireframe view</label>
+        <br>
+
+        <input type="range" min="1" max="100" value="50" class="slider" id="slider1">
 
     </body>
 </html>

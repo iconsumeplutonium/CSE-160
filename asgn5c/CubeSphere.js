@@ -1,90 +1,126 @@
 import * as three from 'three';
+import { createNoise2D, createNoise3D } from './simplex-noise.js';
 
 //https://threejs.org/docs/#api/en/core/BufferGeometry
-export function createSquare(position, size, resolution) {
-    const geometry = new three.BufferGeometry();
+//adapted from https://github.com/SebLague/Procedural-Planets/blob/master/Procedural%20Planet%20E01/Assets/TerrainFace.cs
+export function createSquare(resolution, localUp, radius, normalMap) {
+    let axisA = new three.Vector3(localUp.y, localUp.z, localUp.x);
+    let axisB = localUp.clone().cross(axisA);
 
-    let newCorner = new three.Vector3(-size / 2, -size / 2, -size / 2);
-    
-    // let size = 100;
-    // let resolution = 10;
-    let vertices = [];
-    
-    const stepSize = size / resolution;
-    let k = newCorner.y;
-    for (let i = newCorner.x; i < newCorner.x + size; i += stepSize) {
-        for (let j = newCorner.z; j < newCorner.z + size; j += stepSize) {
+    let vertices = new Float32Array(resolution * resolution * 3);
+    let triangles = new Uint32Array((resolution - 1) * (resolution - 1) * 6);
+    let triIndex = 0;
+
+    const noiseScale = 1;
+
+    for (let y = 0; y < resolution; y++) {
+        for (let x = 0; x < resolution; x++) {
+            let i = x + y * resolution;
+            let percent = new three.Vector2(x, y).divideScalar(resolution - 1);
+            let pointOnUnitCube = localUp.clone().add(axisA.clone().multiplyScalar((percent.x - .5) * 2)).add(axisB.clone().multiplyScalar((percent.y - .5) * 2));
+
+            let pointOnUnitSphere = pointOnUnitCube.normalize();
+
             
-            vertices.push(i, k, j);
-            vertices.push(i + stepSize, k, j);
-            vertices.push(i, k, j + stepSize);
+            let height = (Noise.FBM(noiseScale, 16, 0.5, 2, pointOnUnitSphere) + 1) / 2;
+            //console.log(height + radius)
+            pointOnUnitSphere.multiplyScalar(radius)
+            vertices.set([pointOnUnitSphere.x, pointOnUnitSphere.y, pointOnUnitSphere.z], i * 3);
 
-            vertices.push(i + stepSize, k, j);
-            vertices.push(i + stepSize, k, j + stepSize);
-            vertices.push(i, k, j + stepSize);
+            if (x != resolution - 1 && y != resolution - 1) {
+                triangles[triIndex] = i;
+                triangles[triIndex + 1] = i + resolution + 1;
+                triangles[triIndex + 2] = i + resolution;
+
+                triangles[triIndex + 3] = i;
+                triangles[triIndex + 4] = i + 1;
+                triangles[triIndex + 5] = i + resolution + 1;
+                triIndex += 6;
+            }
         }
     }
-    
 
-    let spheredVertices = [];
-    const radius = 1;
-    for (let i = 0; i < vertices.length; i += 3) {
-        let v = new three.Vector3(vertices[i], vertices[i + 1], vertices[i + 2]).normalize().multiplyScalar(radius);
-        spheredVertices.push(v.x, v.y, v.z);
-    }
+    const geometry = new three.BufferGeometry();
+    geometry.setAttribute('position', new three.BufferAttribute(vertices, 3));
+    geometry.setIndex(new three.BufferAttribute(triangles, 1));
+    //geometry.computeVertexNormals()
+    const material = new three.MeshPhongMaterial({color: 0x00FFFF, wireframe: false});
+
     
-    geometry.setAttribute('position', new three.BufferAttribute( new Float32Array(spheredVertices), 3));
-    const material = new three.MeshPhongMaterial({color: Math.random() * 0xFFFFFF, wireframe: false});
-    const mesh = new three.Mesh( geometry, material );
+    material.normalMap = normalMap;
+    material.normalScale.set(1, 1);
+    material.needsUpdate = true;
+    const mesh = new three.Mesh(geometry, material);
+
 
     return mesh;
-    //scene.add(mesh);
+
+
+    
 }
 
-export function createCubeFace(position, size, numChunks, chunkSize, chunkResolution, scene) {
-    //centered at position
-    const faceSize = size / numChunks;
-    const halfWidth = size / 2;
-
-    for (let i = 0; i < size; i += faceSize) {
-        for (let j = 0; j < size; j += faceSize) {
-            let pos = new three.Vector3(position.x + i, 0, position.z + j);
-            createSquare(pos, scene, chunkSize, chunkResolution);
-        }
-    }
-}
 
 export class CubeSphere {
-    constructor(position, s1, scene) {
+    constructor(position, s1, scene, normalMap) {
         this.meshes = [];
         const faceResolution = 100;
-        const size = 1
+        const radius = 10;
         
-        let topFace = createSquare(position, 1, faceResolution);
+        let topFace = createSquare(faceResolution, new three.Vector3(0, 1, 0), radius, normalMap);
         this.meshes.push(topFace);
 
-        let bottomFace = createSquare(position, size, faceResolution);
-        bottomFace.rotation.z = Math.PI;
+        let bottomFace = createSquare(faceResolution, new three.Vector3(0, -1, 0), radius, normalMap);
         this.meshes.push(bottomFace);
 
-        let frontFace = createSquare(position, size, faceResolution);
-        frontFace.rotation.x = -Math.PI / 2;    
+        let frontFace = createSquare(faceResolution, new three.Vector3(0, 0, 1), radius, normalMap);
         this.meshes.push(frontFace);
 
-        let backFace = createSquare(position, size, faceResolution);
-        backFace.rotation.x = Math.PI / 2;    
+        let backFace = createSquare(faceResolution, new three.Vector3(0, 0, -1), radius, normalMap);
         this.meshes.push(backFace);
 
-        let leftFace = createSquare(position, size, faceResolution);
-        leftFace.rotation.z = Math.PI / 2;
+        let leftFace = createSquare(faceResolution, new three.Vector3(1, 0, 0), radius, normalMap);
         this.meshes.push(leftFace);
         
-        let rightFace = createSquare(position, size, faceResolution);
-        rightFace.rotation.z = -Math.PI / 2;
+        let rightFace = createSquare(faceResolution, new three.Vector3(-1, 0, 0), radius, normalMap);
         this.meshes.push(rightFace);
 
 
         for (let i = 0; i < this.meshes.length; i++)
             scene.add(this.meshes[i]);
+
+        //this.makeMeshes(faceResolution, radius, normalMap, scene);
     }
+
+    setWireframeVisibility(value) {
+        for (let i = 0; i < this.meshes.length; i++)
+            this.meshes[i].material.wireframe = value;
+    }
+
+    // makeMeshes(faceResolution, radius, normalMap, scene) {
+    //     for (let i = 0; i < this.meshes.length; i++)
+    //         scene.remove(this.meshes[i]);
+    //     this.meshes = []
+
+    //     let topFace = createSquare(faceResolution, new three.Vector3(0, 1, 0), radius, normalMap);
+    //     this.meshes.push(topFace);
+
+    //     let bottomFace = createSquare(faceResolution, new three.Vector3(0, -1, 0), radius, normalMap);
+    //     this.meshes.push(bottomFace);
+
+    //     let frontFace = createSquare(faceResolution, new three.Vector3(0, 0, 1), radius, normalMap);
+    //     this.meshes.push(frontFace);
+
+    //     let backFace = createSquare(faceResolution, new three.Vector3(0, 0, -1), radius, normalMap);
+    //     this.meshes.push(backFace);
+
+    //     let leftFace = createSquare(faceResolution, new three.Vector3(1, 0, 0), radius, normalMap);
+    //     this.meshes.push(leftFace);
+        
+    //     let rightFace = createSquare(faceResolution, new three.Vector3(-1, 0, 0), radius, normalMap);
+    //     this.meshes.push(rightFace);
+
+
+    //     for (let i = 0; i < this.meshes.length; i++)
+    //         scene.add(this.meshes[i]);
+    // }
 }
