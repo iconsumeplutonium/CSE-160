@@ -8,24 +8,29 @@ export function createSquare(resolution, localUp, radius, normalMap) {
     let axisB = localUp.clone().cross(axisA);
 
     let vertices = new Float32Array(resolution * resolution * 3);
+    let uvs = new Float32Array(resolution * resolution * 2); 
     let triangles = new Uint32Array((resolution - 1) * (resolution - 1) * 6);
     let triIndex = 0;
 
-    const noiseScale = 1;
-
+    const noiseScale = 0.5
     for (let y = 0; y < resolution; y++) {
         for (let x = 0; x < resolution; x++) {
             let i = x + y * resolution;
             let percent = new three.Vector2(x, y).divideScalar(resolution - 1);
-            let pointOnUnitCube = localUp.clone().add(axisA.clone().multiplyScalar((percent.x - .5) * 2)).add(axisB.clone().multiplyScalar((percent.y - .5) * 2));
+            let pointOnUnitCube = localUp.clone().add(axisA.clone().multiplyScalar((percent.x - 0.5) * 2)).add(axisB.clone().multiplyScalar((percent.y - 0.5) * 2));
 
             let pointOnUnitSphere = pointOnUnitCube.normalize();
 
-            
-            let height = (Noise.FBM(noiseScale, 16, 0.5, 2, pointOnUnitSphere) + 1) / 2;
-            //console.log(height + radius)
-            pointOnUnitSphere.multiplyScalar(radius)
+            let height = (Noise.FBM(noiseScale, 8, 0.5, 2, pointOnUnitSphere) + 1) / 2;
+
+            let idk = noise.simplex3(pointOnUnitSphere.x, pointOnUnitSphere.y, pointOnUnitSphere.z);
+            height = three.MathUtils.lerp(height, 0, idk)
+            //height = bias2(height)
+
+            pointOnUnitSphere.multiplyScalar(radius + height)
             vertices.set([pointOnUnitSphere.x, pointOnUnitSphere.y, pointOnUnitSphere.z], i * 3);
+
+            uvs.set([percent.x, percent.y], i * 2);
 
             if (x != resolution - 1 && y != resolution - 1) {
                 triangles[triIndex] = i;
@@ -40,16 +45,30 @@ export function createSquare(resolution, localUp, radius, normalMap) {
         }
     }
 
+
+
+
+
     const geometry = new three.BufferGeometry();
     geometry.setAttribute('position', new three.BufferAttribute(vertices, 3));
     geometry.setIndex(new three.BufferAttribute(triangles, 1));
-    //geometry.computeVertexNormals()
-    const material = new three.MeshPhongMaterial({color: 0x00FFFF, wireframe: false});
+    geometry.setAttribute('uv', new three.BufferAttribute(uvs, 2));
+    geometry.computeVertexNormals()
+    geometry.computeTangents()
+
+    const material = new three.MeshPhongMaterial({ 
+        wireframe: false,
+        // normalMap: normalMap,
+        // normalScale: new three.Vector2(0.1, 0.1),
+        // color: 0xaaa7a6
+    });
 
     
-    material.normalMap = normalMap;
-    material.normalScale.set(1, 1);
-    material.needsUpdate = true;
+    // material.bumpMap = normalMap;
+    // console.log(material.bumpMap)
+    // material.normalScale.set(1, 1);
+    // material.needsUpdate = true;
+    // material.normalMap = three.TangentSpaceNormalMap
     const mesh = new three.Mesh(geometry, material);
 
 
@@ -59,11 +78,22 @@ export function createSquare(resolution, localUp, radius, normalMap) {
     
 }
 
+function bias(x) {
+    const bias = 0.55;
+    const k = Math.pow(1 - bias, 3);
+
+    return (x * k) / (x * k - x + 1);
+}
+
+function bias2(x) {
+    return Math.exp(4 * (x - 1));
+}
+
 
 export class CubeSphere {
     constructor(position, s1, scene, normalMap) {
         this.meshes = [];
-        const faceResolution = 100;
+        const faceResolution = 500;
         const radius = 10;
         
         let topFace = createSquare(faceResolution, new three.Vector3(0, 1, 0), radius, normalMap);

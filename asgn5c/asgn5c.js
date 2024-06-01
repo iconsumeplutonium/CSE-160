@@ -72,8 +72,10 @@ function main() {
 
 	renderer.render(scene, camera);
     const loader = new three.TextureLoader();
-    loader.load('textures/normalmaptest.jpg', function(texture) {
+    loader.load('textures/Craters.png', function(texture) {
         normalMap = texture;
+        normalMap.colorSpace = three.SRGBColorSpace;
+        normalMap.minFilter = three.LinearMipmapLinearFilter;
         console.log(normalMap)
         c = new CubeSphere.CubeSphere(new three.Vector3(0, 0, 0), 100, scene, normalMap)
         requestAnimationFrame(Update);
@@ -94,7 +96,7 @@ function Update(time) {
 
     // //c = new CubeSphere.CubeSphere(new three.Vector3(0, 0, 0), 100, scene, slider1.value / 100)
     // c.makeMeshes(100, 1, slider1.value / 100, scene)
-    // c.setWireframeVisibility(UIManager.wireframeViewCheckbox.checked);
+    c.setWireframeVisibility(UIManager.wireframeViewCheckbox.checked);
 
     renderer.render(scene, camera);
     requestAnimationFrame(Update);
