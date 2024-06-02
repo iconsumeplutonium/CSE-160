@@ -1,4 +1,6 @@
 "use strict";
+//from https://github.com/jwagner/simplex-noise.js
+
 /*
  * A fast javascript implementation of simplex noise by Jonas Wagner
 

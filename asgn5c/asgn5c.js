@@ -3,11 +3,14 @@ import * as PlayerController from './PlayerController.js';
 import * as CubeSphere from './CubeSphere.js';
 import * as UIManager from './UIManager.js';
 import * as LookupTable from './LookupTable.js';
+import * as Noise from './Noise.js';
+import {Chunk} from './Chunk.js';
 import {OBJLoader} from 'three/addons/loaders/OBJLoader.js';
 import {MTLLoader} from 'three/addons/loaders/MTLLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import datGui from 'https://cdn.jsdelivr.net/npm/dat.gui@0.7.9/+esm'
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+import { createNoise3D } from './simplex-noise.js';
 
 export { three };
 
@@ -79,8 +82,25 @@ function main() {
         normalMap.minFilter = three.LinearMipmapLinearFilter;
         //console.log(normalMap)
         //c = new CubeSphere.CubeSphere(new three.Vector3(0, 0, 0), 100, scene, normalMap)
-        marchingCubes(new three.Vector3(0, 0, 0))
-        marchingCubes(new three.Vector3(-20, 0, 0))
+        // noise.seed(0)
+        // marchingCubes(new three.Vector3(0, 0, 0))
+        // marchingCubes(new three.Vector3(-1, 0, 0))
+        // marchingCubes(new three.Vector3(-2, 0, 0))
+        // marchingCubes(new three.Vector3(-3, 0, 0))
+        // marchingCubes(new three.Vector3(-4, 0, 0))
+        // marchingCubes(new three.Vector3(-5, 0, 0))
+        // marchingCubes(new three.Vector3(1, 0, 0))
+        // marchingCubes(new three.Vector3(0, 0, -1))
+        noise.seed(0)
+        const surfaceLevel = 0.5
+        const size = 10;
+        let c1 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(0, 0, 0), scene, surfaceLevel);
+        let c2 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(0, 0, 1), scene, surfaceLevel);
+        // let c3 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(0, 1, 0), scene, surfaceLevel);
+        // let c4 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(0, 1, 1), scene, surfaceLevel);
+        // let c5 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(1, 0, 0), scene, surfaceLevel);
+        // let c6 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(1, 0, 1), scene, surfaceLevel);
+        // let c7 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(1, 1, 1), scene, surfaceLevel);
         requestAnimationFrame(Update);
     })
 }
@@ -89,6 +109,7 @@ function main() {
 
 let normalMap;
 let c;
+const seed = 0;
 function Update(time) {
 
     PlayerController.movePlayer(controls);
@@ -105,14 +126,10 @@ function Update(time) {
     requestAnimationFrame(Update);
 }
 
-
-const surfaceLevel = 0.5;
-const size = 20;
-const offset = Math.random();
+const offset = 0.001;
 function marchingCubes(startPos) {
     let allVerts = [];
-    noise.seed(0)
-    for (let i = startPos.x; i < 40 + startPos.x; i++) {
+    for (let i = startPos.x; i < size + startPos.x; i++) {
         for (let j = startPos.y; j < size + startPos.y; j++) {
             for (let k = startPos.z; k < size + startPos.z; k++) {
                 //let sample = noise.simplex3(i + offset, j + offset, k + offset)
@@ -206,9 +223,9 @@ function marchingCubes(startPos) {
     //     });
 
     //     const m = new three.Mesh(geo, mat);
-    //     m.position.x =  allVerts[i].x;
-    //     m.position.y =  allVerts[i].y;
-    //     m.position.z =  allVerts[i].z;
+    //     m.position.x = allVerts[i].x;
+    //     m.position.y = allVerts[i].y;
+    //     m.position.z = allVerts[i].z;
     //     scene.add(m);
             
     // }
