@@ -11,12 +11,24 @@ export class Chunk {
 
         //console.log(this.dimensions, this.offset, this.worldSpaceCoords);
 
-        this.noiseMap = Noise.Noise.GenerateNoiseMap(this.dimensions.x+1, this.dimensions.y+1, this.dimensions.z+1, 40, 8, 0.5, 2, this.offset);
+        this.noiseMap = Noise.Noise.GenerateNoiseMap(this.dimensions.x + 1, this.dimensions.y + 1, this.dimensions.z + 1, 40, 8, 0.5, 2, this.offset);
         //console.log(this.noiseMap)
-        this.c = 0xFFFFFF * Math.random()
+        this.c = 0xFFFFFF;
+        this.useInterpolation = true;
+        this.scene = scene;
         this.marchingCubes(scene);
+        this.scene.add(this.mesh); 
+    }
 
-        this.useInterpolation = true;        
+    getMap() {
+        return this.noiseMap;
+    }
+
+    setMap(map) {
+        //this.scene.remove(this.mesh);
+        this.noiseMap = map;
+        this.marchingCubes(this.scene);
+        this.mesh.geometry.attributes.position.needsUpdate = true;
     }
 
     marchingCubes(scene) {
@@ -42,17 +54,6 @@ export class Chunk {
             }
         }
 
-        //console.log(allVerts);
-
-        // allVerts.push(new three.Vector4(0, 0, 0, 0)); //0
-        // allVerts.push(new three.Vector4(1, 0, 0, 0)); //1
-        // allVerts.push(new three.Vector4(0, 1, 0, 0)); //2
-        // allVerts.push(new three.Vector4(0, 1, 1, 1)); //3
-        // allVerts.push(new three.Vector4(1, 0, 0, 0)); //4
-        // allVerts.push(new three.Vector4(1, 0, 1, 0)); //5
-        // allVerts.push(new three.Vector4(1, 1, 0, 0)); //6
-        // allVerts.push(new three.Vector4(1, 1, 1, 0)); //7
-
         // allVerts.push(new three.Vector4(0, 0, 0, 1)); //0
         // allVerts.push(new three.Vector4(1, 0, 0, 1)); //1
         // allVerts.push(new three.Vector4(1, 0, 1, 1)); //2
@@ -69,10 +70,9 @@ export class Chunk {
     
         const geometry = new three.BufferGeometry();
         let verts = [];
-        for (let i = 0; i <= this.dimensions.x - 1; i++) {
-            for (let j = 0; j <= this.dimensions.y - 1; j++) {
-                for (let k = 0; k <= this.dimensions.z - 1; k++) {
-                    //this.sphere(0, 0, k, scene);
+        for (let i = 0; i < this.dimensions.x; i++) {
+            for (let j = 0; j < this.dimensions.y; j++) {
+                for (let k = 0; k < this.dimensions.z; k++) {
     
                     let corners = [];
                     corners.push(new three.Vector3(i,     j,     k    ));
@@ -88,7 +88,7 @@ export class Chunk {
     
                     //calculate halfway/interpolated vectors for each edge, based on https://paulbourke.net/geometry/polygonise/polygonise1.gif
                     let edges = [];
-                    //if (this.useInterpolation) {
+                    if (this.useInterpolation) {
                         edges.push(this.interpolatedEdge(allVerts[i    ][j    ][k    ],     allVerts[i + 1][j    ][k    ])); //0
                         edges.push(this.interpolatedEdge(allVerts[i + 1][j    ][k    ],     allVerts[i + 1][j    ][k + 1])); //1
                         edges.push(this.interpolatedEdge(allVerts[i + 1][j    ][k + 1],     allVerts[i    ][j    ][k + 1])); //2
@@ -104,28 +104,23 @@ export class Chunk {
                         edges.push(this.interpolatedEdge(allVerts[i + 1][j    ][k + 1],     allVerts[i + 1][j + 1][k + 1])); //10
                         edges.push(this.interpolatedEdge(allVerts[i    ][j    ][k + 1],     allVerts[i    ][j + 1][k + 1])); //11
 
-                    //} else {
-                        // edges.push(new three.Vector3(i + 0.5, j,       k      )); //0
-                        // edges.push(new three.Vector3(i + 1,   j,       k + 0.5)); //1
-                        // edges.push(new three.Vector3(i + 0.5, j,       k + 1  )); //2
-                        // edges.push(new three.Vector3(i,       j,       k + 0.5)); //3
-                        // edges.push(new three.Vector3(i + 0.5, j + 1,   k      )); //4
-                        // edges.push(new three.Vector3(i + 1,   j + 1,   k + 0.5)); //5
-                        // edges.push(new three.Vector3(i + 0.5, j + 1,   k + 1  )); //6
-                        // edges.push(new three.Vector3(i,       j + 1,   k + 0.5)); //7
-                        // edges.push(new three.Vector3(i,       j + 0.5, k      )); //8
-                        // edges.push(new three.Vector3(i + 1,   j + 0.5, k      )); //9
-                        // edges.push(new three.Vector3(i + 1,   j + 0.5, k + 1  )); //10
-                        // edges.push(new three.Vector3(i,       j + 0.5, k + 1  )); //11
-                    //}
+                    } else {
+                        edges.push(new three.Vector3(i + 0.5, j,       k      )); //0
+                        edges.push(new three.Vector3(i + 1,   j,       k + 0.5)); //1
+                        edges.push(new three.Vector3(i + 0.5, j,       k + 1  )); //2
+                        edges.push(new three.Vector3(i,       j,       k + 0.5)); //3
+                        edges.push(new three.Vector3(i + 0.5, j + 1,   k      )); //4
+                        edges.push(new three.Vector3(i + 1,   j + 1,   k + 0.5)); //5
+                        edges.push(new three.Vector3(i + 0.5, j + 1,   k + 1  )); //6
+                        edges.push(new three.Vector3(i,       j + 1,   k + 0.5)); //7
+                        edges.push(new three.Vector3(i,       j + 0.5, k      )); //8
+                        edges.push(new three.Vector3(i + 1,   j + 0.5, k      )); //9
+                        edges.push(new three.Vector3(i + 1,   j + 0.5, k + 1  )); //10
+                        edges.push(new three.Vector3(i,       j + 0.5, k + 1  )); //11
+                    }
 
                     
                     let index = 0b0;
-                    // for (let p = 0; p < 8; p++) {
-                    //     //console.log(allVerts[corners[p]])
-                    //     if (allVerts[corners[p]].w < this.surfaceLevel)
-                    //         index |= Math.pow(2, p);
-                    // }
                     if (allVerts[corners[0].x][corners[0].y][corners[0].z].w < this.surfaceLevel) { index |= 0b00000001; /*console.log("here0", allVerts[corners[0]]);*/ }
                     if (allVerts[corners[1].x][corners[1].y][corners[1].z].w < this.surfaceLevel) { index |= 0b00000010; /*console.log("here1", allVerts[corners[1]]);*/ }
                     if (allVerts[corners[2].x][corners[2].y][corners[2].z].w < this.surfaceLevel) { index |= 0b00000100; /*console.log("here2", allVerts[corners[2]]);*/ }
@@ -147,9 +142,15 @@ export class Chunk {
                         let p2 = edges[activeTris[x + 1]];
                         let p3 = edges[activeTris[x + 2]];
                         
-                        verts.push(p1.x, p1.y , p1.z , 
-                                   p2.x, p2.y , p2.z , 
-                                   p3.x, p3.y , p3.z );
+                        let shift = new three.Vector3(0, 0, 0);
+                        if (!this.useInterpolation) //idk why its like this (interpolation doing absolute coord smaybe?)
+                            shift = this.worldSpaceCoords.clone();
+
+                        verts.push(
+                            p1.x + shift.x, p1.y + shift.y, p1.z + shift.z, 
+                            p2.x + shift.x, p2.y + shift.y, p2.z + shift.z, 
+                            p3.x + shift.x, p3.y + shift.y, p3.z + shift.z
+                        );
                     }
                 }
             }
@@ -159,41 +160,42 @@ export class Chunk {
     
         //console.log(verts)
         
-        // let c = Math.random()
-        for (let i = 0; i <= this.dimensions.x; i++) {
-            for (let j = 0; j <= this.dimensions.y; j++) {
-                for (let k = 0; k <= this.dimensions.z; k++) {
+
+        // for (let i = 0; i <= this.dimensions.x; i++) {
+        //     for (let j = 0; j <= this.dimensions.y; j++) {
+        //         for (let k = 0; k <= this.dimensions.z; k++) {
    
-                    // let sample = (noise.simplex3(i + offset, j + offset, k + offset) + 1) / 2;
-                    // if (sample > surfaceLevel)
-                    //     continue;
-                    if (allVerts[i][j][k].w >= this.surfaceLevel)
-                        continue;
-                    //const col = (sample < surfaceLevel) ? 0x0000FF : 0xFFFFFF;
+        //             // let sample = (noise.simplex3(i + offset, j + offset, k + offset) + 1) / 2;
+        //             // if (sample > surfaceLevel)
+        //             //     continue;
+        //             if (allVerts[i][j][k].w >= this.surfaceLevel)
+        //                 continue;
+        //             //const col = (sample < surfaceLevel) ? 0x0000FF : 0xFFFFFF;
             
-                    //const geo = new three.BoxGeometry(1, 1, 1);
-                    const geo = new three.SphereGeometry(0.1, 1, 1);
-                    const mat = new three.MeshPhongMaterial({
-                        color: (allVerts[i][j][k].w >= this.surfaceLevel) ? 0xFFFFFF : 0xFF0000
-                    });
+        //             //const geo = new three.BoxGeometry(1, 1, 1);
+        //             const geo = new three.SphereGeometry(0.1, 1, 1);
+        //             const mat = new three.MeshPhongMaterial({
+        //                 color: (allVerts[i][j][k].w >= this.surfaceLevel) ? 0xFFFFFF : 0xFF0000
+        //             });
             
-                    const m = new three.Mesh(geo, mat);
-                    m.position.x = i + this.worldSpaceCoords.x;
-                    m.position.y = j + this.worldSpaceCoords.y;
-                    m.position.z = k + this.worldSpaceCoords.z;
-                    scene.add(m);
-                }
-            }   
-        }
+        //             const m = new three.Mesh(geo, mat);
+        //             m.position.x = i + this.worldSpaceCoords.x;
+        //             m.position.y = j + this.worldSpaceCoords.y;
+        //             m.position.z = k + this.worldSpaceCoords.z;
+        //             scene.add(m);
+        //         }
+        //     }   
+        // }
     
         geometry.computeVertexNormals()
         const material = new three.MeshPhongMaterial({
-            color: 0xFFFFFF * Math.random(),
+            color: this.color,
             side: three.DoubleSide
         });
         const mesh = new three.Mesh(geometry, material);
-    
-        scene.add(mesh);
+        
+        this.mesh = mesh;
+        //scene.add(mesh);
     }
 
     coordToIndex(x, y, z) {

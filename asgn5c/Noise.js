@@ -97,7 +97,6 @@ export class Noise {
         for (let z = 0; z < mapDepth; z++) {
             for (let y = 0; y < mapHeight; y++) {
                 for (let x = 0; x < mapWidth; x++) {
-                    //map[x][y] = minNoiseHeight * (1 - map[x][y]) + maxNoiseHeight * map[x][y];
                     map[x][y][z] = (map[x][y][z] + 1) / 2;
                 }
             }

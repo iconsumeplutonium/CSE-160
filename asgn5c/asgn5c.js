@@ -20,6 +20,8 @@ let material, loader;
 let cubes = [];
 let interceptor;
 
+let flashlight;
+
 let controls;
 
 function main() {
@@ -53,10 +55,15 @@ function main() {
 
     // let light = new three.PointLight(0xFFFFFF, 10, 0, 2);
     // light.position.set(0, 20, 0);
-    // scene.add(light);asd
-    let dirLight = new three.DirectionalLight( 0xffffff, 1.5);
-    dirLight.position.set(1, 9999999, 1)
-    scene.add( dirLight );
+    // scene.add(light);
+    let dirLight = new three.DirectionalLight(0xFFFFFF, 1.5);
+    dirLight.position.set(10, 99, 10);
+    scene.add(dirLight);
+
+    // flashlight = new three.SpotLight(0xFFFFFF, 1, 0, Math.PI / 8, 0, 0);
+    // scene.add(flashlight);
+
+    
 
     let light = new three.AmbientLight(0xFFFFFF, 1);
     scene.add(light);
@@ -82,169 +89,120 @@ function main() {
         normalMap.minFilter = three.LinearMipmapLinearFilter;
         //console.log(normalMap)
         //c = new CubeSphere.CubeSphere(new three.Vector3(0, 0, 0), 100, scene, normalMap)
-        // noise.seed(0)
-        // marchingCubes(new three.Vector3(0, 0, 0))
-        // marchingCubes(new three.Vector3(-1, 0, 0))
-        // marchingCubes(new three.Vector3(-2, 0, 0))
-        // marchingCubes(new three.Vector3(-3, 0, 0))
-        // marchingCubes(new three.Vector3(-4, 0, 0))
-        // marchingCubes(new three.Vector3(-5, 0, 0))
-        // marchingCubes(new three.Vector3(1, 0, 0))
-        // marchingCubes(new three.Vector3(0, 0, -1))
-        noise.seed(0)
-        const surfaceLevel = 0.5
+
+        noise.seed(1)
+        const surfaceLevel = 0.5;
         const size = 10;
-        let c1 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(0, 0, 0), scene, surfaceLevel);
+        c1 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(0, 0, 0), scene, surfaceLevel);
         let c2 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(0, 0, 1), scene, surfaceLevel);
-        // let c3 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(0, 1, 0), scene, surfaceLevel);
+        let c3 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(0, 1, 0), scene, surfaceLevel);
         // let c4 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(0, 1, 1), scene, surfaceLevel);
         // let c5 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(1, 0, 0), scene, surfaceLevel);
         // let c6 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(1, 0, 1), scene, surfaceLevel);
         // let c7 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(1, 1, 1), scene, surfaceLevel);
+        raycaster = new three.Raycaster();
+        pointer = new three.Vector2();
+
+        document.addEventListener('pointermove', function(ev) {
+            pointer.x = (ev.clientX / window.innerWidth) * 2 - 1;
+			pointer.y = -(ev.clientY / window.innerHeight) * 2 + 1;
+        });
+
+        document.addEventListener('mousedown', function(event) {
+            if (event.which === 1)
+                cursorStatus = 1;
+            else if (event.which === 3)
+                cursorStatus = 2; 
+        });
+
+        document.addEventListener('mouseup', function(event) {
+            cursorStatus = 0;
+        })
+
+
+        let geometry = new three.BufferGeometry();
+        geometry.setAttribute('position', new three.BufferAttribute( new Float32Array(4 * 3), 3));
+
+        let material = new three.LineBasicMaterial( { color: 0xFFFFFF, transparent: true } );
+
+        line = new three.Line( geometry, material );
+        scene.add( line );
+        line = new three.Line(geometry, material);
+
+        
         requestAnimationFrame(Update);
     })
 }
 
-
+let cursorStatus = 0;
 
 let normalMap;
-let c;
+let c1;
+let raycaster, pointer;
 const seed = 0;
+let line;
 function Update(time) {
 
     PlayerController.movePlayer(controls);
 
     UIManager.displayFPS();
+    let x = (canvas.width / 2 / canvas.width) * 2 - 1;
+    let y = - (canvas.height / 2 / canvas.height) * 2 + 1;
+
+    raycaster.setFromCamera(new three.Vector2(x, y), camera);
+
+    //console.log(cursorStatus);
+
+   
+    // const intersection = raycaster.intersectObject(c1.mesh);
+    //     if (intersection.length > 0) {
+    //         console.log("intersection");
+
+    //         const intersect = intersection[0];
+    //         const face = intersect.face;
+
+    //         const linePosition = line.geometry.attributes.position;
+    //         const meshPosition = c1.mesh.geometry.attributes.position;
+
+    //         console.log(intersect.point)
+    //         if (cursorStatus != 0) {
+    //         if (intersect.point) {
+    //             let m = c1.getMap();
+            
+    //             m[Math.round(intersect.point.x)][Math.round(intersect.point.y)][Math.round(intersect.point.z)] += 0.2 * (cursorStatus == 1) ? 1 : -1;
+
+    //             c1.setMap(m);
+    //         }
+
+    //         linePosition.copyAt(0, meshPosition, face.a);
+    //         linePosition.copyAt(1, meshPosition, face.b);
+    //         linePosition.copyAt(2, meshPosition, face.c);
+    //         linePosition.copyAt(3, meshPosition, face.a);
+
+    //         c1.mesh.updateMatrix();
+
+    //         line.geometry.applyMatrix4(c1.mesh.matrix );
+
+    //         line.visible = true;
+    //     } 
+    // }
 
     // scene.remove(c);
 
     // //c = new CubeSphere.CubeSphere(new three.Vector3(0, 0, 0), 100, scene, slider1.value / 100)
     // c.makeMeshes(100, 1, slider1.value / 100, scene)
     //c.setWireframeVisibility(UIManager.wireframeViewCheckbox.checked);
+    // flashlight.rotation.x = controls.camera.rotation.x
+    // flashlight.rotation.y = controls.camera.rotation.y;
+    // flashlight.rotation.z = controls.camera.rotation.z;
+
+    // flashlight.position.x = controls.camera.position.x
+    // flashlight.position.y = controls.camera.position.y;
+    // flashlight.position.z = controls.camera.position.z;
 
     renderer.render(scene, camera);
     requestAnimationFrame(Update);
 }
-
-const offset = 0.001;
-function marchingCubes(startPos) {
-    let allVerts = [];
-    for (let i = startPos.x; i < size + startPos.x; i++) {
-        for (let j = startPos.y; j < size + startPos.y; j++) {
-            for (let k = startPos.z; k < size + startPos.z; k++) {
-                //let sample = noise.simplex3(i + offset, j + offset, k + offset)
-                let sample = Noise.FBM(40, 8, 0.5, 2, new three.Vector3(i + offset, j + offset, k + offset));
-                //console.log(i, j, k, sample)
-                allVerts.push(new three.Vector4(i, j, k, sample));
-            }
-        }
-    }
-
-    // allVerts.push(new three.Vector4(0, 0, 0, 0));
-    // allVerts.push(new three.Vector4(0, 0, 1, 0));
-    // allVerts.push(new three.Vector4(0, 1, 0, 0));
-    // allVerts.push(new three.Vector4(0, 1, 1, 1));
-    // allVerts.push(new three.Vector4(1, 0, 0, 0));
-    // allVerts.push(new three.Vector4(1, 0, 1, 0));
-    // allVerts.push(new three.Vector4(1, 1, 0, 0));
-    // allVerts.push(new three.Vector4(1, 1, 1, 0));
-
-    const geometry = new three.BufferGeometry();
-    let verts = [];
-    for (let i = 0; i < size - 1; i++) {
-        for (let j = 0; j < size - 1; j++) {
-            for (let k = 0; k < size - 1; k++) {
-
-                let corners = [];
-                corners.push(coordToIndex(i,     j,     k    ));
-                corners.push(coordToIndex(i + 1, j,     k    ));
-                corners.push(coordToIndex(i + 1, j,     k + 1));
-                corners.push(coordToIndex(i,     j,     k + 1));
-                corners.push(coordToIndex(i,     j + 1, k    ));
-                corners.push(coordToIndex(i + 1, j + 1, k    ));
-                corners.push(coordToIndex(i + 1, j + 1, k + 1));
-                corners.push(coordToIndex(i,     j + 1, k + 1));
-
-                //calculate halfway vectors for each edge, based on https://paulbourke.net/geometry/polygonise/polygonise1.gif
-                let edges = [];
-                edges.push(new three.Vector3(i + 0.5, j,       k      ));
-                edges.push(new three.Vector3(i + 1,   j,       k + 0.5));
-                edges.push(new three.Vector3(i + 0.5, j,       k + 1  ));
-                edges.push(new three.Vector3(i,       j,       k + 0.5));
-                edges.push(new three.Vector3(i + 0.5, j + 1,   k      ));
-                edges.push(new three.Vector3(i + 1,   j + 1,   k + 0.5));
-                edges.push(new three.Vector3(i + 0.5, j + 1,   k + 1  ));
-                edges.push(new three.Vector3(i,       j + 1,   k + 0.5));
-                edges.push(new three.Vector3(i,       j + 0.5, k      ));
-                edges.push(new three.Vector3(i + 1,   j + 0.5, k      ));
-                edges.push(new three.Vector3(i + 1,   j + 0.5, k + 1  ));
-                edges.push(new three.Vector3(i,       j + 0.5, k + 1  ));
-                
-                let index = 0;
-                for (let p = 0; p < 8; p++) {
-                    //console.log(allVerts[corners[p]])
-                    if (allVerts[corners[p]].w <= surfaceLevel)
-                        index |= Math.pow(2, p);
-                }
-
-                // let activeEdgesHex = LookupTable.edgeTable[index];
-                // let activeEdges = LookupTable.getActiveEdges(activeEdgesHex);
-
-                //console.log(index)
-
-                let activeTris = LookupTable.triTable[index];
-                for (let x = 0; activeTris[x] != -1; x += 3) {
-                    let p1 = edges[activeTris[x]];
-                    let p2 = edges[activeTris[x + 1]];
-                    let p3 = edges[activeTris[x + 2]];
-                    
-                    verts.push(p1.x + startPos.x, p1.y + startPos.y, p1.z + startPos.z, p2.x + startPos.x, p2.y + startPos.y, p2.z + startPos.z, p3.x + startPos.x, p3.y + startPos.y, p3.z + startPos.z);
-                }
-            }
-        }
-    }
-
-    //console.log(verts)
-
-    geometry.setAttribute('position', new three.BufferAttribute(new Float32Array(verts), 3));
-
-    // for (let i = 0; i < allVerts.length; i++) {
-    //     // let sample = (noise.simplex3(i + offset, j + offset, k + offset) + 1) / 2;
-    //     // if (sample > surfaceLevel)
-    //     //     continue;
-    //     if (allVerts[i].w > surfaceLevel)
-    //         continue;
-    //     //const col = (sample < surfaceLevel) ? 0x0000FF : 0xFFFFFF;
-
-    //     //const geo = new three.BoxGeometry(1, 1, 1);
-    //     const geo = new three.SphereGeometry(0.1, 10, 10);
-    //     const mat = new three.MeshPhongMaterial({
-    //         color: 0xFFFFFF
-    //     });
-
-    //     const m = new three.Mesh(geo, mat);
-    //     m.position.x = allVerts[i].x;
-    //     m.position.y = allVerts[i].y;
-    //     m.position.z = allVerts[i].z;
-    //     scene.add(m);
-            
-    // }
-
-    geometry.computeVertexNormals()
-    const material = new three.MeshPhongMaterial({
-        color: 0xFFFFFF * Math.random(),
-        side: three.DoubleSide
-    });
-    const mesh = new three.Mesh(geometry, material);
-
-
-    scene.add(mesh);
-}
-
-function coordToIndex(x, y, z) {
-    return (z * size * size) + (y * size) + x;
-}
-
 
 
 main();
