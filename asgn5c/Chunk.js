@@ -11,7 +11,7 @@ export class Chunk {
 
         //console.log(this.dimensions, this.offset, this.worldSpaceCoords);
 
-        this.noiseMap = Noise.Noise.GenerateNoiseMap(this.dimensions.x + 1, this.dimensions.y + 1, this.dimensions.z + 1, 40, 8, 0.5, 2, this.offset);
+        this.noiseMap = Noise.Noise.GenerateNoiseMap(this.dimensions.x + 2, this.dimensions.y + 2, this.dimensions.z + 2, 40, 8, 0.5, 2, this.offset);
         //console.log(this.noiseMap)
         this.c = 0xFFFFFF;
         this.useInterpolation = true;
@@ -25,10 +25,11 @@ export class Chunk {
     }
 
     setMap(map) {
-        //this.scene.remove(this.mesh);
+        this.scene.remove(this.mesh);
         this.noiseMap = map;
         this.marchingCubes(this.scene);
-        this.mesh.geometry.attributes.position.needsUpdate = true;
+        //this.mesh.geometry.attributes.position.needsUpdate = true;
+        this.scene.add(this.mesh)
     }
 
     marchingCubes(scene) {
@@ -86,23 +87,52 @@ export class Chunk {
 
                     //console.log("corners", corners)
     
+                    
+                    
+                    let index = 0b0;
+                    if (allVerts[corners[0].x][corners[0].y][corners[0].z].w < this.surfaceLevel) { index |= 0b00000001; /*console.log("here0", allVerts[corners[0]]);*/ }
+                    if (allVerts[corners[1].x][corners[1].y][corners[1].z].w < this.surfaceLevel) { index |= 0b00000010; /*console.log("here1", allVerts[corners[1]]);*/ }
+                    if (allVerts[corners[2].x][corners[2].y][corners[2].z].w < this.surfaceLevel) { index |= 0b00000100; /*console.log("here2", allVerts[corners[2]]);*/ }
+                    if (allVerts[corners[3].x][corners[3].y][corners[3].z].w < this.surfaceLevel) { index |= 0b00001000; /*console.log("here3", allVerts[corners[3]]);*/ }
+                    if (allVerts[corners[4].x][corners[4].y][corners[4].z].w < this.surfaceLevel) { index |= 0b00010000; /*console.log("here4", allVerts[corners[4]]);*/ }
+                    if (allVerts[corners[5].x][corners[5].y][corners[5].z].w < this.surfaceLevel) { index |= 0b00100000; /*console.log("here5", allVerts[corners[5]]);*/ }
+                    if (allVerts[corners[6].x][corners[6].y][corners[6].z].w < this.surfaceLevel) { index |= 0b01000000; /*console.log("here6", allVerts[corners[6]]);*/ }
+                    if (allVerts[corners[7].x][corners[7].y][corners[7].z].w < this.surfaceLevel) { index |= 0b10000000; /*console.log("here7", allVerts[corners[7]]);*/ }
+                    
+                    if (index == 0)
+                        continue;
+                    //console.log(index)
+
+                    
+                    let activeEdgesHex = LookupTable.edgeTable[index];
+                    let activeEdges = LookupTable.getActiveEdges(activeEdgesHex);
+
+                    if (activeEdges == [])
+                        continue;
+                    
                     //calculate halfway/interpolated vectors for each edge, based on https://paulbourke.net/geometry/polygonise/polygonise1.gif
                     let edges = [];
                     if (this.useInterpolation) {
-                        edges.push(this.interpolatedEdge(allVerts[i    ][j    ][k    ],     allVerts[i + 1][j    ][k    ])); //0
-                        edges.push(this.interpolatedEdge(allVerts[i + 1][j    ][k    ],     allVerts[i + 1][j    ][k + 1])); //1
-                        edges.push(this.interpolatedEdge(allVerts[i + 1][j    ][k + 1],     allVerts[i    ][j    ][k + 1])); //2
-                        edges.push(this.interpolatedEdge(allVerts[i    ][j    ][k + 1],     allVerts[i    ][j    ][k    ])); //3
+                        edges.push(this.interpolateEdge(allVerts[i    ][j    ][k    ],     allVerts[i + 1][j    ][k    ])); //0
+                        edges.push(this.interpolateEdge(allVerts[i + 1][j    ][k    ],     allVerts[i + 1][j    ][k + 1])); //1
+                        edges.push(this.interpolateEdge(allVerts[i + 1][j    ][k + 1],     allVerts[i    ][j    ][k + 1])); //2
+                        edges.push(this.interpolateEdge(allVerts[i    ][j    ][k + 1],     allVerts[i    ][j    ][k    ])); //3
 
-                        edges.push(this.interpolatedEdge(allVerts[i    ][j + 1][k    ],     allVerts[i + 1][j + 1][k    ])); //4
-                        edges.push(this.interpolatedEdge(allVerts[i + 1][j + 1][k    ],     allVerts[i + 1][j + 1][k + 1])); //5
-                        edges.push(this.interpolatedEdge(allVerts[i + 1][j + 1][k + 1],     allVerts[i    ][j + 1][k + 1])); //6
-                        edges.push(this.interpolatedEdge(allVerts[i    ][j + 1][k + 1],     allVerts[i    ][j + 1][k    ])); //7
+                        edges.push(this.interpolateEdge(allVerts[i    ][j + 1][k    ],     allVerts[i + 1][j + 1][k    ])); //4
+                        edges.push(this.interpolateEdge(allVerts[i + 1][j + 1][k    ],     allVerts[i + 1][j + 1][k + 1])); //5
+                        edges.push(this.interpolateEdge(allVerts[i + 1][j + 1][k + 1],     allVerts[i    ][j + 1][k + 1])); //6
+                        edges.push(this.interpolateEdge(allVerts[i    ][j + 1][k + 1],     allVerts[i    ][j + 1][k    ])); //7
 
-                        edges.push(this.interpolatedEdge(allVerts[i    ][j    ][k    ],     allVerts[i    ][j + 1][k    ])); //8
-                        edges.push(this.interpolatedEdge(allVerts[i + 1][j    ][k    ],     allVerts[i + 1][j + 1][k    ])); //9
-                        edges.push(this.interpolatedEdge(allVerts[i + 1][j    ][k + 1],     allVerts[i + 1][j + 1][k + 1])); //10
-                        edges.push(this.interpolatedEdge(allVerts[i    ][j    ][k + 1],     allVerts[i    ][j + 1][k + 1])); //11
+                        edges.push(this.interpolateEdge(allVerts[i    ][j    ][k    ],     allVerts[i    ][j + 1][k    ])); //8
+                        edges.push(this.interpolateEdge(allVerts[i + 1][j    ][k    ],     allVerts[i + 1][j + 1][k    ])); //9
+                        edges.push(this.interpolateEdge(allVerts[i + 1][j    ][k + 1],     allVerts[i + 1][j + 1][k + 1])); //10
+                        edges.push(this.interpolateEdge(allVerts[i    ][j    ][k + 1],     allVerts[i    ][j + 1][k + 1])); //11
+                        // for (let e = 0; e < activeEdges.length; e++)
+                        //     edges[activeEdges[e]] = this.getInterpolatedEdge(e, allVerts, i, j, k);
+
+
+
+
 
                     } else {
                         edges.push(new three.Vector3(i + 0.5, j,       k      )); //0
@@ -118,25 +148,11 @@ export class Chunk {
                         edges.push(new three.Vector3(i + 1,   j + 0.5, k + 1  )); //10
                         edges.push(new three.Vector3(i,       j + 0.5, k + 1  )); //11
                     }
-
                     
-                    let index = 0b0;
-                    if (allVerts[corners[0].x][corners[0].y][corners[0].z].w < this.surfaceLevel) { index |= 0b00000001; /*console.log("here0", allVerts[corners[0]]);*/ }
-                    if (allVerts[corners[1].x][corners[1].y][corners[1].z].w < this.surfaceLevel) { index |= 0b00000010; /*console.log("here1", allVerts[corners[1]]);*/ }
-                    if (allVerts[corners[2].x][corners[2].y][corners[2].z].w < this.surfaceLevel) { index |= 0b00000100; /*console.log("here2", allVerts[corners[2]]);*/ }
-                    if (allVerts[corners[3].x][corners[3].y][corners[3].z].w < this.surfaceLevel) { index |= 0b00001000; /*console.log("here3", allVerts[corners[3]]);*/ }
-                    if (allVerts[corners[4].x][corners[4].y][corners[4].z].w < this.surfaceLevel) { index |= 0b00010000; /*console.log("here4", allVerts[corners[4]]);*/ }
-                    if (allVerts[corners[5].x][corners[5].y][corners[5].z].w < this.surfaceLevel) { index |= 0b00100000; /*console.log("here5", allVerts[corners[5]]);*/ }
-                    if (allVerts[corners[6].x][corners[6].y][corners[6].z].w < this.surfaceLevel) { index |= 0b01000000; /*console.log("here6", allVerts[corners[6]]);*/ }
-                    if (allVerts[corners[7].x][corners[7].y][corners[7].z].w < this.surfaceLevel) { index |= 0b10000000; /*console.log("here7", allVerts[corners[7]]);*/ }
-
-                    //console.log(index)
-    
-                    let activeEdgesHex = LookupTable.edgeTable[index];
-                    let activeEdges = LookupTable.getActiveEdges(activeEdgesHex);
-
-    
+                    // console.log(activeEdges)
+                    // console.log(edges)
                     let activeTris = LookupTable.triTable[index];
+                    //console.log(activeTris)
                     for (let x = 0; activeTris[x] != -1; x += 3) {
                         let p1 = edges[activeTris[x]];
                         let p2 = edges[activeTris[x + 1]];
@@ -168,8 +184,8 @@ export class Chunk {
         //             // let sample = (noise.simplex3(i + offset, j + offset, k + offset) + 1) / 2;
         //             // if (sample > surfaceLevel)
         //             //     continue;
-        //             if (allVerts[i][j][k].w >= this.surfaceLevel)
-        //                 continue;
+        //             // if (allVerts[i][j][k].w >= this.surfaceLevel)
+        //             //     continue;
         //             //const col = (sample < surfaceLevel) ? 0x0000FF : 0xFFFFFF;
             
         //             //const geo = new three.BoxGeometry(1, 1, 1);
@@ -218,13 +234,42 @@ export class Chunk {
         scene.add(mesh);
     }
 
-    interpolatedEdge(a, b) {
+    interpolateEdge(a, b) {
         let p1 = new three.Vector3(a.x, a.y, a.z);
         let p2 = new three.Vector3(b.x, b.y, b.z);
 
         let v1 = a.w;
         let v2 = b.w
         return p1.add(p2.sub(p1).multiplyScalar(this.surfaceLevel - v1).divideScalar(v2 - v1))
+    }
+
+    getInterpolatedEdge(index, allVerts, i, j, k) {
+        switch (index){
+            case 0:
+                return this.interpolateEdge(allVerts[i    ][j    ][k    ],     allVerts[i + 1][j    ][k    ]);
+            case 1:
+                return this.interpolateEdge(allVerts[i + 1][j    ][k    ],     allVerts[i + 1][j    ][k + 1]);
+            case 2:
+                return this.interpolateEdge(allVerts[i + 1][j    ][k + 1],     allVerts[i    ][j    ][k + 1]);
+            case 3:
+                return this.interpolateEdge(allVerts[i    ][j    ][k + 1],     allVerts[i    ][j    ][k    ]);
+            case 4:
+                return this.interpolateEdge(allVerts[i    ][j + 1][k    ],     allVerts[i + 1][j + 1][k    ]);
+            case 5:
+                return this.interpolateEdge(allVerts[i + 1][j + 1][k    ],     allVerts[i + 1][j + 1][k + 1]);
+            case 6:
+                return this.interpolateEdge(allVerts[i + 1][j + 1][k + 1],     allVerts[i    ][j + 1][k + 1]);
+            case 7:
+                return this.interpolateEdge(allVerts[i    ][j + 1][k + 1],     allVerts[i    ][j + 1][k    ]);
+            case 8:
+                return this.interpolateEdge(allVerts[i    ][j    ][k    ],     allVerts[i    ][j + 1][k    ]);
+            case 9:
+                return this.interpolateEdge(allVerts[i + 1][j    ][k    ],     allVerts[i + 1][j + 1][k    ]);
+            case 10:
+                return this.interpolateEdge(allVerts[i + 1][j    ][k + 1],     allVerts[i + 1][j + 1][k + 1]);
+            case 11: 
+                return this.interpolateEdge(allVerts[i    ][j    ][k + 1],     allVerts[i    ][j + 1][k + 1]);
+        }
     }
     
 }

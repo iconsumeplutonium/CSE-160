@@ -5,6 +5,7 @@ import * as UIManager from './UIManager.js';
 import * as LookupTable from './LookupTable.js';
 import * as Noise from './Noise.js';
 import {Chunk} from './Chunk.js';
+import * as InfiniteTerrain from './InfiniteTerrain.js';
 import {OBJLoader} from 'three/addons/loaders/OBJLoader.js';
 import {MTLLoader} from 'three/addons/loaders/MTLLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -92,10 +93,10 @@ function main() {
 
         noise.seed(1)
         const surfaceLevel = 0.5;
-        const size = 10;
-        c1 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(0, 0, 0), scene, surfaceLevel);
-        let c2 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(0, 0, 1), scene, surfaceLevel);
-        let c3 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(0, 1, 0), scene, surfaceLevel);
+        size = 100;
+        //c1 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(0, 0, 0), scene, surfaceLevel);
+        // let c2 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(0, 0, 1), scene, surfaceLevel);
+        // let c3 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(0, 1, 0), scene, surfaceLevel);
         // let c4 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(0, 1, 1), scene, surfaceLevel);
         // let c5 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(1, 0, 0), scene, surfaceLevel);
         // let c6 = new Chunk(new three.Vector3(size, size, size), new three.Vector3(1, 0, 1), scene, surfaceLevel);
@@ -128,8 +129,6 @@ function main() {
         line = new three.Line( geometry, material );
         scene.add( line );
         line = new three.Line(geometry, material);
-
-        
         requestAnimationFrame(Update);
     })
 }
@@ -140,8 +139,10 @@ let normalMap;
 let c1;
 let raycaster, pointer;
 const seed = 0;
-let line;
+let line, size;
 function Update(time) {
+
+    //InfiniteTerrain.updateVisibleChunks(controls.camera.position, scene, 0.5, size)
 
     PlayerController.movePlayer(controls);
 
@@ -154,38 +155,39 @@ function Update(time) {
     //console.log(cursorStatus);
 
    
-    // const intersection = raycaster.intersectObject(c1.mesh);
-    //     if (intersection.length > 0) {
-    //         console.log("intersection");
+    const intersection = raycaster.intersectObject(c1.mesh);
+        if (intersection.length > 0) {
+            console.log("intersection");
 
-    //         const intersect = intersection[0];
-    //         const face = intersect.face;
+            const intersect = intersection[0];
+            const face = intersect.face;
 
-    //         const linePosition = line.geometry.attributes.position;
-    //         const meshPosition = c1.mesh.geometry.attributes.position;
+            const linePosition = line.geometry.attributes.position;
+            const meshPosition = c1.mesh.geometry.attributes.position;
 
-    //         console.log(intersect.point)
-    //         if (cursorStatus != 0) {
-    //         if (intersect.point) {
-    //             let m = c1.getMap();
+            console.log(intersect.point)
+            if (cursorStatus != 0) {
+            if (intersect.point) {
+                let m = c1.getMap();
             
-    //             m[Math.round(intersect.point.x)][Math.round(intersect.point.y)][Math.round(intersect.point.z)] += 0.2 * (cursorStatus == 1) ? 1 : -1;
+                m[Math.round(intersect.point.x)][Math.round(intersect.point.y)][Math.round(intersect.point.z)] += 0.2 * (cursorStatus == 1) ? 1 : -1;
 
-    //             c1.setMap(m);
-    //         }
+                c1.setMap(m);
+            }
+        }
 
-    //         linePosition.copyAt(0, meshPosition, face.a);
-    //         linePosition.copyAt(1, meshPosition, face.b);
-    //         linePosition.copyAt(2, meshPosition, face.c);
-    //         linePosition.copyAt(3, meshPosition, face.a);
+            linePosition.copyAt(0, meshPosition, face.a);
+            linePosition.copyAt(1, meshPosition, face.b);
+            linePosition.copyAt(2, meshPosition, face.c);
+            linePosition.copyAt(3, meshPosition, face.a);
 
-    //         c1.mesh.updateMatrix();
+            c1.mesh.updateMatrix();
 
-    //         line.geometry.applyMatrix4(c1.mesh.matrix );
+            line.geometry.applyMatrix4(c1.mesh.matrix );
 
-    //         line.visible = true;
-    //     } 
-    // }
+            line.visible = true;
+        } 
+    //}
 
     // scene.remove(c);
 
@@ -199,7 +201,7 @@ function Update(time) {
     // flashlight.position.x = controls.camera.position.x
     // flashlight.position.y = controls.camera.position.y;
     // flashlight.position.z = controls.camera.position.z;
-
+    
     renderer.render(scene, camera);
     requestAnimationFrame(Update);
 }
