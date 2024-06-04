@@ -2,6 +2,8 @@
 
 export let wireframeViewCheckbox;
 export let slider1;
+export let slider2;
+export let slider3;
 
 let fpsCounter;
 
@@ -9,6 +11,8 @@ export function connectUIElements() {
     fpsCounter = document.getElementById("fpsCounter");
     wireframeViewCheckbox = document.getElementById("wireframeViewCheckbox");
     slider1 = document.getElementById("slider1");
+    slider2 = document.getElementById("slider2");
+    slider3 = document.getElementById("slider3");
 }
 
 
