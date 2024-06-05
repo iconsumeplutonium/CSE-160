@@ -14,7 +14,7 @@ export function connectUIElements() {
 
     envReflectCheckbox = document.getElementById("envReflectCheckbox");
     scatteringCheckbox = document.getElementById("scatteringCheckbox");
-    
+
     slider1 = document.getElementById("slider1");
     slider2 = document.getElementById("slider2");
     slider3 = document.getElementById("slider3");

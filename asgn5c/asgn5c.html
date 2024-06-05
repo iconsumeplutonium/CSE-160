@@ -25,26 +25,19 @@
 
         <script src="MinMaxGUIHelper.js"></script>
         <script type="module" src="PlayerController.js"></script>
-        <script type="module" src="CubeSphere.js"></script>
         <script type="module" src="UIManager.js"></script>
-        <script>var exports = {}</script>
-        <script type="module" src="simplex-noise.js"></script>
-        <script src="perlin.js"></script>
-        <script type="module" src="Noise.js"></script>
-        <script type="module" src="LookupTable.js"></script>
-        <script type="module" src="Chunk.js"></script>
-        <script type="module" src="InfiniteTerrain.js"></script>
+        <script type="module" src="WaterShader.js"></script>
         <script type="module" src="asgn5c.js"></script>
         
 
         <p id="fpsCounter">FPS: </p>
 
         <label>Use environment reflections</label>
-        <input id="envReflectCheckbox" type="checkbox">
+        <input id="envReflectCheckbox" type="checkbox" checked="true">
         <br>
 
         <label>Use subsurface scattering</label>
-        <input id="scatteringCheckbox" type="checkbox">
+        <input id="scatteringCheckbox" type="checkbox" checked="true">
         <br>
 
 
@@ -53,7 +46,7 @@
         <input type="range" min="-200" max="200" value="0" class="slider" id="slider3"> <br>
 
         <label style="margin-bottom: 0px; padding: 0px;">Water Color</label>
-        <input type="color" id="colorPicker" value="#4983BF"> <br><br>
+        <input type="color" id="colorPicker" value="#003C4F"> <br><br>
 
     </body>
 </html>
