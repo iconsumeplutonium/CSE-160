@@ -1,3 +1,5 @@
+//Lookup tables for the marching cubes algorithm
+
 export let triTable =
     [[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
     [0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],

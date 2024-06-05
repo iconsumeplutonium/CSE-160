@@ -39,13 +39,21 @@
 
         <p id="fpsCounter">FPS: </p>
 
-        <input id="wireframeViewCheckbox" type="checkbox">
-        <label>Use wireframe view</label>
+        <label>Use environment reflections</label>
+        <input id="envReflectCheckbox" type="checkbox">
         <br>
+
+        <label>Use subsurface scattering</label>
+        <input id="scatteringCheckbox" type="checkbox">
+        <br>
+
 
         <input type="range" min="-200" max="200" value="0" class="slider" id="slider1">
         <input type="range" min="-200" max="200" value="0" class="slider" id="slider2">
-        <input type="range" min="-200" max="200" value="0" class="slider" id="slider3">
+        <input type="range" min="-200" max="200" value="0" class="slider" id="slider3"> <br>
+
+        <label style="margin-bottom: 0px; padding: 0px;">Water Color</label>
+        <input type="color" id="colorPicker" value="#4983BF"> <br><br>
 
     </body>
 </html>

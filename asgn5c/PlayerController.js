@@ -34,7 +34,7 @@ export function setupController() {
 let clock = new three.Clock();
 export function movePlayer(controls) {
     const deltaTime = clock.getDelta();
-    const speed = 300;
+    const speed = 100;
 
     direction.x = Number(keys.d) - Number(keys.a);
     direction.y = Number(keys.space) - Number(keys.lshift);

@@ -1,3 +1,12 @@
+/*
+Idea 1: Procedurally generated planets
+
+It kind of worked, I got 3D noise working on a cube-sphere. 
+
+Abandoned because no matter what, it only calculated lighting per vertex instead of per fragment, so it looked like shit close up
+*/
+
+
 import * as three from 'three';
 import { createNoise2D, createNoise3D } from './simplex-noise.js';
 

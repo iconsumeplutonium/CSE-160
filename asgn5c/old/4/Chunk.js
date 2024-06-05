@@ -1,3 +1,10 @@
+/*
+Idea 4: Infinitely generating procedural city
+
+It worked. Sampling a perlin noise value for each city "block" which would become the height of the building at that point. 
+Abandoned because I realized (a) procedural building generation itself is way too hard and (b) all the good pre-made building 3D models required money.
+*/
+
 import * as three from 'three';
 import {FBM} from './Noise.js';
 

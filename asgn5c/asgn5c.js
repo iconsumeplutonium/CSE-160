@@ -13,6 +13,9 @@ import datGui from 'https://cdn.jsdelivr.net/npm/dat.gui@0.7.9/+esm'
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { createNoise3D } from './simplex-noise.js';
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 
 export { three };
 
@@ -73,32 +76,9 @@ function main() {
         'skybox1.png',
         'skybox3.png',
     ]); 
-
-    //X X X 2 X X
-
     scene.background = textureCube;
 
-
-
-    noise.seed(1)
-
-    // let box = new three.BoxGeometry(50 * Math.random(), 1, 20 * Math.random());
-    // let sphere = new three.SphereGeometry(2);
-
-    // let bufferGeometry1 = new three.BufferGeometry().fromGeometry(box);
-    // let bufferGeometry2 = new three.BufferGeometry().fromGeometry(sphere);
-
-
-    // let mergedGeometry = BufferGeometryUtils.mergeGeometries([box, sphere]);
-
-
-    // let m = new three.MeshPhongMaterial({
-    //     color:0xFFFFFF
-    // })
-
-    //scene.add(new three.Mesh(mergedGeometry, m))
-    //scene.background = new three.Color(1, 1, 1);
-    const size = 500;
+    const size = 1000;
     water = createSquare(new three.Vector3(0, 0, 0), size, size);
     scene.add(water);
 
@@ -108,9 +88,62 @@ function main() {
     light = new three.Mesh(box, mat);
     scene.add(light);
 
+    let FogShader = {
+        uniforms: {
+            "tDiffuse": { type: "t", value: null },
+            "fogNear": { type: "f", value: 0 },
+            "fogFar": { type: "f", value: 10 },
+            "fogColor": { type: "c", value: new three.Color(0xffffff) },
+            "u_CameraPos":   { value: camera.position.clone() },
+        },
+    
+        vertexShader: `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
+    
+        fragmentShader: `
+            uniform sampler2D tDiffuse;
+            uniform float fogNear;
+            uniform float fogFar;
+            uniform vec3 fogColor;
+            uniform vec4 u_CameraPos;
+
+            varying vec2 vUv;
+            varying float fogDepth;
+            void main() {
+                float depth = gl_FragCoord.z / gl_FragCoord.w;
+                float fogFactor = smoothstep( fogNear, fogFar, depth );
+                vec4 fogColor = vec4( fogColor, 1.0 );
+                vec4 color = texture2D(tDiffuse, vUv);
+
+                vec4 underwaterColor = vec4(0.04, 0.368, 1.0, 1.0);
+            
+
+                gl_FragColor = color;//(u_CameraPos.y <= 3.0) ? mix(color, underwaterColor, 0.5) : color;
+            }`
+    };
+
+    renderer.autoClear = false;
+    composer = new EffectComposer(renderer);
+    var renderPass = new RenderPass(scene, camera);
+    renderer.clearDepth = false;
+    composer.addPass(renderPass);
+
+    // Create the fog pass
+    fogPass = new ShaderPass(FogShader);
+    fogPass.renderToScreen = true;
+
+    
+    // Add it to your EffectComposer
+    
+    composer.addPass(fogPass);
+
     
     requestAnimationFrame(Update);
-
 }
 
 
@@ -120,6 +153,8 @@ let raycaster;
 let water;
 let light;
 let textureCube;
+let composer;
+let fogPass;
 function Update(time) {
 
     PlayerController.movePlayer(controls);
@@ -138,10 +173,18 @@ function Update(time) {
     light.position.x = lightPos.x;
     light.position.y = lightPos.y;
     light.position.z = lightPos.z;
-    water.material.uniforms.u_LightPos.value = lightPos.normalize()
+    water.material.uniforms.u_LightPos.value = lightPos.normalize();
+
+    water.material.uniforms.useEnvReflct.value = UIManager.envReflectCheckbox.checked;
+    water.material.uniforms.useScattering.value = UIManager.scatteringCheckbox.checked;
+
+    water.material.uniforms.u_FragColor.value = UIManager.getLightColor();
    
-    renderer.render(scene, camera);
+    fogPass.material.uniforms.u_CameraPos.value = camera.position.clone()
+    //renderer.render(scene, camera);
+    composer.render()
     requestAnimationFrame(Update);
+    
 }
 
 
@@ -149,7 +192,7 @@ function Update(time) {
 function createSquare(position, size, resolution) {
     const geometry = new three.BufferGeometry();
 
-    let newCorner = new three.Vector3(-size / 2, 0, -size / 2);
+    let newCorner = new three.Vector3(-size / 2, 50, -size / 2);
 
     // let size = 100;
     // let resolution = 10;
@@ -175,11 +218,13 @@ function createSquare(position, size, resolution) {
 
     const material = new three.ShaderMaterial({
         uniforms: {
-            u_LightPos: { value: new three.Vector3(100, 100, 0).normalize() }, 
-            u_FragColor: { value: new three.Color(0.286, 0.513, 0.749) },
-            u_Time: { type: "f", value: 0 },
-            u_CameraPos: { value: camera.position.clone() },
-            u_Skybox: {value: textureCube}
+            u_LightPos:    { value: new three.Vector3(100, 100, 0).normalize() }, 
+            u_FragColor:   { value: new three.Color(0.286, 0.513, 0.749) },
+            u_Time:        { type: "f", value: 0 },
+            u_CameraPos:   { value: camera.position.clone() },
+            u_Skybox:      { value: textureCube},
+            useEnvReflct:  { value: UIManager.envReflectCheckbox.checked},
+            useScattering: { value: UIManager.scatteringCheckbox.checked}
         },
         vertexShader: `
             varying vec3 v_Position;
@@ -276,7 +321,7 @@ function createSquare(position, size, resolution) {
                 }
 
                 v_Position = vec3(position.x, height, position.z);
-                v_Normal = normalize(normal);
+                v_Normal = normal;
 
                 gl_Position = projectionMatrix * modelViewMatrix * vec4(v_Position, 1.0);
             }
@@ -291,30 +336,39 @@ function createSquare(position, size, resolution) {
 
             uniform samplerCube u_Skybox;
 
+            uniform bool useEnvReflct;
+            uniform bool useScattering;
+
+            vec3 fogColor = vec3(0.5, 0.5, 0.5);
+            float fogRadius = 400.0;
+
             void main() {
                 vec3 L = normalize(u_LightPos);
                 vec3 N = normalize(v_Normal);
                 vec3 R = normalize(2.0 * dot(L, N) * N - L);
                 vec3 V = normalize(u_CameraPos - v_Position);
 
-                vec3 k_d = vec3(0.5);
-                vec3 diffuse =  max(dot(L, N), 0.0) * u_FragColor;
-
-                vec3 specular = vec3(1.0) * pow(max(dot(R, V), 0.0), 5.0);
-
-                vec3 ambient = vec3(0.5) * u_FragColor;
-
-                vec3 dirToCamera = normalize(u_CameraPos - v_Position);
-                vec3 R2 = normalize(2.0 * N * dot(N, dirToCamera) - dirToCamera);
-                vec3 reflectedSkyboxCol = textureCube(u_Skybox, R2).xyz;
-
                 float fresnel = pow(1.0 - dot(N, V), 5.0) + 0.2;
 
-                vec3 environRflct = reflectedSkyboxCol * fresnel * 0.1;
+                vec3 k_d = vec3(0.5);
+                vec3 diffuse =  max(dot(L, N), 0.0) * u_FragColor;
+                vec3 specular = vec3(1.0) * pow(max(dot(R, V), 0.0), 5.0) * fresnel;
+                vec3 ambient = vec3(0.5) * u_FragColor;
 
-                gl_FragColor = vec4(diffuse + ambient + specular * fresnel + environRflct, 1.0);
+                vec3 R2 = normalize(2.0 * dot(N, V) * N - V);
+                vec3 reflectedSkyboxCol = textureCube(u_Skybox, R2).xyz;
+
+                vec3 environRflct         =  (useEnvReflct)  ?  reflectedSkyboxCol * fresnel * 0.1                               :  vec3(0.0);
+                vec3 subsurfaceScattering =  (useScattering) ?  vec3(0.0293, 0.0698, 0.1717) * 0.1 * (0.2 + v_Position.y / 2.0)  :  vec3(0.0);  //scattering formula from here: https://www.shadertoy.com/view/MdXyzX
+
+                vec3 pixelColor = diffuse + ambient + specular + environRflct + subsurfaceScattering;
+                float dist = clamp(length(u_CameraPos - v_Position) / fogRadius, 0.0, 1.0);
+
+                //mix(pixelColor, fogColor, dist)
+                gl_FragColor = vec4(pixelColor, 1.0);
             }
-        `
+        `,
+        side: three.DoubleSide
     });
     
 
