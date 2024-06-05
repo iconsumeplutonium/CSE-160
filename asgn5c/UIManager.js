@@ -1,25 +1,39 @@
-import * as three from 'three';
+import datGui from 'https://cdn.jsdelivr.net/npm/dat.gui@0.7.9/+esm';
 
-export let envReflectCheckbox;
-export let scatteringCheckbox;
-export let slider1;
-export let slider2;
-export let slider3;
+export let guiValues = {
+    fps: "0",
+    useEnvRflct: true,
+    useScattering: true,
+    lightX: 0,
+    resetX: function() {
+        this.lightX = 0;
+    },
+    lightZ: 0,
+    resetZ: function() {
+        this.lightZ = 0;
+    }
+};
 
-let fpsCounter;
-let colorPicker;
+// let colorPicker;
+let gui;
 
 export function connectUIElements() {
-    fpsCounter = document.getElementById("fpsCounter");
+    gui = new datGui.GUI({width: 350});
+    let fpsCounterGUI = gui.add(guiValues, 'fps').name('FPS');
+    fpsCounterGUI.domElement.querySelector('input').disabled = true;
 
-    envReflectCheckbox = document.getElementById("envReflectCheckbox");
-    scatteringCheckbox = document.getElementById("scatteringCheckbox");
+    gui.add(guiValues, 'useEnvRflct').name('Environment Reflections');
+    gui.add(guiValues, 'useScattering').name('Subsurface Scattering');
+    
+    const lightFolder = gui.addFolder('Light Position');
+    lightFolder.open();
+    lightFolder.add(guiValues, 'lightX', -400, 400).name('X');
+    lightFolder.add(guiValues, 'resetX').name('Reset X');
+    
+    lightFolder.add(guiValues, 'lightZ', -400, 400).name('Z');
+    lightFolder.add(guiValues, 'resetZ').name('Reset Z');
 
-    slider1 = document.getElementById("slider1");
-    slider2 = document.getElementById("slider2");
-    slider3 = document.getElementById("slider3");
-
-    colorPicker = document.getElementById("colorPicker");
+    //colorPicker = document.getElementById("colorPicker");
 }
 
 
@@ -35,15 +49,16 @@ export function displayFPS() {
         fps = 1/delta;
     }
 
-    fpsCounter.innerText = "FPS: " + fps.toFixed(3);
+    guiValues.fps = fps.toFixed(3);
+    gui.updateDisplay();
 }
 
-export function getLightColor() {
-    let color = colorPicker.value;
+// export function getLightColor() {
+//     let color = colorPicker.value;
 
-    let r = parseInt(color.slice(1, 3), 16) / 255;
-    let g = parseInt(color.slice(3, 5), 16) / 255;
-    let b = parseInt(color.slice(5, 7), 16) / 255;
+//     let r = parseInt(color.slice(1, 3), 16) / 255;
+//     let g = parseInt(color.slice(3, 5), 16) / 255;
+//     let b = parseInt(color.slice(5, 7), 16) / 255;
 
-    return new three.Color(r, g, b);
-}
+//     return new three.Color(r, g, b);
+// }

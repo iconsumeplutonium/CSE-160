@@ -3,37 +3,39 @@ import * as PlayerController from './PlayerController.js';
 import * as UIManager from './UIManager.js';
 import * as WaterShader from './WaterShader.js';
 import * as UnderwaterShader from './UnderwaterShader.js';
-import {OBJLoader} from 'three/addons/loaders/OBJLoader.js';
-import {MTLLoader} from 'three/addons/loaders/MTLLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import datGui from 'https://cdn.jsdelivr.net/npm/dat.gui@0.7.9/+esm'
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-
-export { three };
 
 export let camera;
 
 let renderer, scene, canvas;
 let controls;
 let water;
-let light;
-let textureCube;
-let composer;
-let postProcess;
+let light, textureCube;
+let composer, postProcess;
+let oceanSound, underwaterSound;
+let underwaterThreshold = 10;
 
 //false: orbit controls (default)
 //true: pointer lock controls (for testing purposes)
 let useFirstPersonControls = false;
 
 function main() {
+    document.documentElement.style.height = '100vh';
+    document.body.style.height = '100vh';
+    document.body.style.margin = '0';
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.height = '100%';
+    document.body.style.height = '100%';
+    document.body.style.padding = '0';
 
 	canvas = document.getElementById('webgl');
 	renderer = new three.WebGLRenderer( { antialias: true, canvas } );
 
-	camera = new three.PerspectiveCamera(50, canvas.width / canvas.height, 0.1, 1000);
+	camera = new three.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.rotation.x = -Math.PI / 2;
     camera.rotation.y = -Math.PI / 2;
     camera.rotation.z = -Math.PI / 2;
@@ -42,6 +44,19 @@ function main() {
     camera.position.y = 30;
 	camera.position.z = 0;
 	scene = new three.Scene();
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    renderer.domElement.style.outline = 'none'; 
+    renderer.domElement.style.border = 'none';
+
+
+    window.addEventListener('resize', function() {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+    })
 
 
     if (useFirstPersonControls) {
@@ -92,6 +107,7 @@ function main() {
         uniforms: {
             "tDiffuse": { type: "t", value: null },
             "u_CameraPos":   { value: camera.position.clone() },
+            "u_UnderwaterThreshold": {type: "f", value: underwaterThreshold}
         },
     
         vertexShader: UnderwaterShader.vertexShader,    
@@ -108,29 +124,46 @@ function main() {
     composer.addPass(postProcess);
 
     
+
+    setupAudio();
     requestAnimationFrame(Update);
 }
 
-
+let camPosLastFrame = 0;
 function Update(time) {
 
     if (useFirstPersonControls)
         PlayerController.movePlayer(controls);
     UIManager.displayFPS();
 
+    if (camPosLastFrame > underwaterThreshold && camera.position.y <= underwaterThreshold) {
+        oceanSound.pause();
+        underwaterSound.play();
+    }
+
+    if (camPosLastFrame <= underwaterThreshold && camera.position.y > underwaterThreshold) {
+        underwaterSound.pause();
+        oceanSound.play();
+    }
+
+    camPosLastFrame = camera.position.y;
+    console.log(camera.position.y / 250);
+    oceanSound.setVolume(1 - (camera.position.y / 250));
+
+
     water.material.uniforms.u_Time.value = time;
     water.material.uniforms.u_CameraPos.value = camera.position.clone()
 
-    let lightPos = new three.Vector3(slider1.value, 200, slider3.value);
+    let lightPos = new three.Vector3(UIManager.guiValues.lightX, 200, UIManager.guiValues.lightZ);
     light.position.x = lightPos.x;
     light.position.y = lightPos.y;
     light.position.z = lightPos.z;
     water.material.uniforms.u_LightPos.value = lightPos.normalize();
 
-    water.material.uniforms.useEnvReflct.value = UIManager.envReflectCheckbox.checked;
-    water.material.uniforms.useScattering.value = UIManager.scatteringCheckbox.checked;
+    water.material.uniforms.useEnvReflct.value = UIManager.guiValues.useEnvRflct;
+    water.material.uniforms.useScattering.value = UIManager.guiValues.useScattering;
 
-    water.material.uniforms.u_FragColor.value = UIManager.getLightColor();
+    water.material.uniforms.u_FragColor.value = new three.Color(0, 0.23529411764705882, 0.30980392156862746); //UIManager.getLightColor();
    
     postProcess.material.uniforms.u_CameraPos.value = camera.position.clone();
 
@@ -170,8 +203,8 @@ function createSquare(size, resolution) {
             u_Time:        { type: "f", value: 0 },
             u_CameraPos:   { value: camera.position.clone() },
             u_Skybox:      { value: textureCube},
-            useEnvReflct:  { value: UIManager.envReflectCheckbox.checked},
-            useScattering: { value: UIManager.scatteringCheckbox.checked}
+            useEnvReflct:  { value: UIManager.guiValues.useEnvRflct},
+            useScattering: { value: UIManager.guiValues.useScattering}
         },
         vertexShader: WaterShader.vertexShader,
         fragmentShader: WaterShader.fragmentShader,
@@ -181,6 +214,34 @@ function createSquare(size, resolution) {
     const mesh = new three.Mesh(geometry, material);
 
     return mesh;
+}
+
+
+function setupAudio() {
+    const listener = new three.AudioListener();
+    camera.add(listener);
+    oceanSound = new three.Audio(listener);
+    underwaterSound = new three.Audio(listener);
+
+    const audioLoader = new three.AudioLoader();
+
+    //from https://www.youtube.com/watch?v=R94jfCzP-vg
+    audioLoader.load('sounds/ocean_ambience.mp3', function(buffer) {
+        oceanSound.setBuffer(buffer);
+        oceanSound.setLoop(true);
+        oceanSound.setVolume(1 - (camera.position.y / 250));
+        oceanSound.autoPlay = true;
+        oceanSound.pause();
+    });
+
+    //from https://www.youtube.com/watch?v=la_AEFO8m7U
+    audioLoader.load('sounds/underwater_ambience.mp3', function(buffer) {
+        underwaterSound.setBuffer(buffer);
+        underwaterSound.setLoop(true);
+        underwaterSound.setVolume(1);
+        underwaterSound.autoPlay = false;
+        underwaterSound.pause();
+    });
 }
 
 

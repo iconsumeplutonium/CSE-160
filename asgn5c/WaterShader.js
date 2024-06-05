@@ -6,44 +6,20 @@ uniform float u_Time;
 
 struct Wave {
     float amplitude;
-    float wavelength;
     float speed;
-
     float frequency;
     
     vec2 dir;
 };
 
-float waveCoord(vec3 p, Wave w) {
-    //float x = dot(w.dir, p.xz)
-    return p.x * w.dir.x + p.z * w.dir.y;
-}
-
-float waveHeight(vec3 p, Wave w) {
-    float xz = waveCoord(p, w);
-    float phase = w.speed * w.frequency;
-
-    //float x = w.amplitude * sin(dot(p.xz, w.dir) * w.frequency + u_Time * phase);
-    float x = w.amplitude * exp(sin(dot(p.xz, w.dir) * w.frequency + u_Time * phase) - 1.0);
-    return x;
-}
-
-vec3 waveNormal(vec3 p, Wave w) {
-    // float dx = w.frequency * w.amplitude * w.dir.x * cos(xz * w.frequency + u_Time * phase);
-    // float dz = w.frequency * w.amplitude * w.dir.y * cos(xz * w.frequency + u_Time * phase);
-                    
+vec3 waveNormal(vec3 p, Wave w) {              
     float phase = w.speed * w.frequency;
     float x = dot(p.xz, w.dir) * w.frequency + u_Time * phase;
 
     float dx = w.frequency * w.amplitude * w.dir.x * exp(sin(x) - 1.0) * cos(x);
     float dz = w.frequency * w.amplitude * w.dir.y * exp(sin(x) - 1.0) * cos(x);
     
-    float dy = -sqrt(1.0 - dx * dx - dz * dz);
     return vec3(dx, 0.01, dz);
-}
-
-float rand(vec2 st) {
-    return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
 }
 
 void main() {
@@ -132,7 +108,7 @@ void main() {
     vec3 reflectedSkyboxCol = textureCube(u_Skybox, R2).xyz;
 
     vec3 environRflct         =  (useEnvReflct)  ?  reflectedSkyboxCol * fresnel * 0.1                               :  vec3(0.0);
-    vec3 subsurfaceScattering =  (useScattering) ?  vec3(0.0293, 0.0698, 0.1717) * 0.1 * (0.2 + v_Position.y / 2.0)  :  vec3(0.0);  //scattering formula from here: https://www.shadertoy.com/view/MdXyzX
+    vec3 subsurfaceScattering =  (useScattering) ?  vec3(0.0293, 0.0698, 0.1717) * 0.1 * (0.2 + v_Position.y / 2.0)  :  vec3(0.0);  //scattering "formula" from here: https://www.shadertoy.com/view/MdXyzX
 
     gl_FragColor = vec4(diffuse + ambient + specular + environRflct + subsurfaceScattering, 1.0);
 }`;
