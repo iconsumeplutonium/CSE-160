@@ -2,12 +2,12 @@ import * as three from 'three';
 import * as PlayerController from './PlayerController.js';
 import * as UIManager from './UIManager.js';
 import * as WaterShader from './WaterShader.js';
+import * as UnderwaterShader from './UnderwaterShader.js';
 import {OBJLoader} from 'three/addons/loaders/OBJLoader.js';
 import {MTLLoader} from 'three/addons/loaders/MTLLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import datGui from 'https://cdn.jsdelivr.net/npm/dat.gui@0.7.9/+esm'
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
-import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
@@ -22,7 +22,7 @@ let water;
 let light;
 let textureCube;
 let composer;
-let fogPass;
+let postProcess;
 
 //false: orbit controls (default)
 //true: pointer lock controls (for testing purposes)
@@ -59,13 +59,11 @@ function main() {
         controls.maxDistance = 250;
     }
 
-    
+    if (useFirstPersonControls)
+        PlayerController.setupController();
 
-    
-    PlayerController.setupController();
     UIManager.connectUIElements();
 
-	renderer.render(scene, camera);
     const loader = new three.CubeTextureLoader();
     loader.setPath('./textures/')
     textureCube = loader.load([
@@ -89,94 +87,29 @@ function main() {
     light.position.y = 200;
     scene.add(light);
 
-    let FogShader = {
+
+    let postProcessShader = {
         uniforms: {
             "tDiffuse": { type: "t", value: null },
-            "tDepth": { type: "t", value: null},
-            "fogNear": { type: "f", value: 2.5 },
-            "fogFar": { type: "f", value: 3 },
-            "fogColor": { type: "c", value: new three.Color(0xffffff) },
             "u_CameraPos":   { value: camera.position.clone() },
         },
     
-        vertexShader: `
-            varying vec2 vUv;
-            void main() {
-                vUv = uv;
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-            }
-        `,
-    
-        fragmentShader: `
-            uniform sampler2D tDiffuse;
-            uniform sampler2D tDepth;
-
-            uniform float fogNear;
-            uniform float fogFar;
-            uniform vec3 fogColor;
-            uniform vec4 u_CameraPos;
-
-            varying vec2 vUv;
-            varying float fogDepth;
-
-            float LinearizeDepth(float depth) {
-                float zNear = 0.1; // zNear: the camera's near clipping plane
-                float zFar = 1000.0; // zFar: the camera's far clipping plane
-                return (2.0 * zNear) / (zFar + zNear - depth * (zFar - zNear));
-            }
-
-            void main() {
-                vec4 color = texture2D(tDiffuse, vUv);
-                vec4 underwaterColor = vec4(0.04, 0.368, 1.0, 1.0);
-        
-                float depth = texture2D(tDepth, vUv).r;
-                depth = LinearizeDepth(depth);
-        
-                float fogFactor = smoothstep(fogNear, fogFar, depth);
-                vec4 fogColor = vec4(fogColor, 1.0);
-        
-                //gl_FragColor = mix(color, fogColor, fogFactor);
-                
-                
-                
-                
-                gl_FragColor = (u_CameraPos.y <= 3.0) ? mix(color, underwaterColor, 0.5) : color;
-            }`
+        vertexShader: UnderwaterShader.vertexShader,    
+        fragmentShader: UnderwaterShader.fragmentShader
     };
 
-    renderer.autoClear = false;
-    composer = new EffectComposer(renderer);
-    var renderPass = new RenderPass(scene, camera);
-    renderer.clearDepth = false;
-    composer.addPass(renderPass);
 
-    // Create the fog pass
-    fogPass = new ShaderPass(FogShader);
-    fogPass.renderToScreen = true;
-
-
-    target = new three.WebGLRenderTarget(window.innerWidth, window.innerHeight);
-    target.texture.format = three.RGBFormat;
-    target.texture.minFilter = three.NearestFilter;
-    target.texture.magFilter = three.NearestFilter;
-    target.texture.generateMipmaps = false;
-    target.stencilBuffer = false;
-    target.depthBuffer = true;
-    target.depthTexture = new three.DepthTexture();
-    target.depthTexture.format = three.DepthFormat;
-    target.depthTexture.type = three.UnsignedShortType;
     
-    // Render the scene to the target
-    renderer.setRenderTarget(target);
+    let renderPass = new RenderPass(scene, camera);
+    postProcess = new ShaderPass(postProcessShader);
 
-    FogShader.uniforms.tDepth.value = target.depthTexture;
-    composer.addPass(fogPass);
+    composer = new EffectComposer(renderer);
+    composer.addPass(renderPass);
+    composer.addPass(postProcess);
 
     
     requestAnimationFrame(Update);
 }
-
-let target;
 
 
 function Update(time) {
@@ -199,18 +132,10 @@ function Update(time) {
 
     water.material.uniforms.u_FragColor.value = UIManager.getLightColor();
    
-    fogPass.material.uniforms.u_CameraPos.value = camera.position.clone();
-    fogPass.material.uniforms.tDepth.value = target.depthTexture;
-
-    // renderer.setRenderTarget(target);
-    // renderer.render(scene, camera);
-
-    // fogPass.material.uniforms.tDepth.value = target.depthTexture;
-
+    postProcess.material.uniforms.u_CameraPos.value = camera.position.clone();
 
     composer.render()
-    requestAnimationFrame(Update);
-    
+    requestAnimationFrame(Update);    
 }
 
 
@@ -220,8 +145,6 @@ function createSquare(size, resolution) {
 
     let newCorner = new three.Vector3(-size / 2, 50, -size / 2);
 
-    // let size = 100;
-    // let resolution = 10;
     let vertices = [];
 
     const stepSize = size / resolution;
