@@ -1,0 +1,19 @@
+Assignment 5C <br> <br>
+
+<a href="asgn5c.html">Link to asgn5c.html</a> <br>
+<a href="https://iconsumeplutonium.github.io/CSE-160/asgn5c/asgn5c.html">Link to live hosted version on Github Pages</a> <br> <br>
+
+<h3>Notes to Grader</h3>
+
+<p>
+For this project, I chose to implement a physically rendered water shader. It uses the sum-of-sines technique where you continuosly add sine waves till you get something that resembles water. This makes use of fractional brownian motion in order to make sure that successive sine waves have more detail but contribute less to the overall shape of the water. <br><br>
+
+Rather than use a simple sine wave, I chose to use e^sin(x - 1), because it resembles the peaks of water. For each wave, I can multiply it by an amplitude to adjust the height. The value I plug into the function is the dot product of the position and wave direction, multiplied by the frequency, and added to the current time (times a speed value). Then for each successive wave, the amplitude is multiplied by a value less than 1, and the frequency is multiplied by a value greater than 1 to have smaller but more detailed waves. The position I sample each wave is also shifted around by the derivative of the previous wave, to make it look like the water is pushing itself around. <br><br>
+
+Then for lighting I calculated the normals per vertex by taking the derivative of e^sin(x - 1) and summing it in the same loop as the main vertex displacement calculations. This calculates the normals vector which I pass to the fragment shader to calculate the Phong lighting model. In the fragment shader, I also used the skybox as a cubemap for enviroment reflections, and I found a fake approximation of subsurface scattering. <br><br>
+
+I also added a post processing effect that tints the screen blue when the camera goes under the water. <br><br>
+
+I also added ambient sounds. When the camera is above the water, it plays ocean ambience. When the camera is below the water, it switches to underwater ambience sounds. <br><br>
+
+https://developer.nvidia.com/gpugems/gpugems/part-i-natural-effects/chapter-1-effective-water-simulation-physical-models
