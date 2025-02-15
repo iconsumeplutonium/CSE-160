@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>asgn3b</title>
+        <link rel="shortcut icon" href="#"> <!-- to silence the stupid favicon not found error-->
+        <link href="https://fonts.cdnfonts.com/css/minecraftia" rel="stylesheet">
+        <link rel="stylesheet" href="site/styles.css">
+    </head>
+
+    <body onload="main()">
+        <div class="container">
+            <div class="controls-container">
+                <p style="margin-bottom: 0px; padding: 0px;" id="">World Seed:</p>
+                <input type="text" class="text-mc" id="seedBox" pattern="\d*">
+                <button class="btn-minecraft2" onclick="randomSeed()">Random</button>
+
+                <p style="margin-bottom: 0px; padding: 0px;" id="fovText">FOV</p>
+                <input type="range" min="0" max="60" value="30" class="slider" id="fovSlider" oninput="updateFOV()">
+                <button class="btn-minecraft" onclick="resetSlider('fovSlider')">Reset</button>
+
+                <p style="margin-bottom: 0px; padding: 0px;" id="renderDistanceText">Render Distance</p>
+                <input type="range" min="0" max="3" value="2" class="slider" id="renderDistSlider" oninput="updateRenderDist()">
+                <button class="btn-minecraft" onclick="resetSlider('renderDistSlider')">Reset</button>
+
+                <p style="margin-bottom: 0px; padding: 0px;" id="mouseSensitivityText">Mouse Sensitivity</p>
+                <input type="range" min="125" max="1000" value="250" class="slider" id="mouseSensitivitySlider" oninput="updateMouseSensitivity()">
+                <button class="btn-minecraft" onclick="resetSlider('mouseSensitivitySlider')">Reset</button> <br>
+
+                <span style="margin-bottom: 0px; padding: 0px; font-size: 13px;">Disable Tree/Cactus spawning</span>
+                <input type="checkbox" id="disableFoliageCheckbox">
+            </div>
+
+
+            
+            <div class="canvas-container">
+                <canvas id="webgl" width="854" height="480">
+                    Please use the browser that supports canvas.
+                </canvas>
+                <div class="image-container">
+                    <img class="bottom" src="site/hotbar.png" style="width: 640px;">
+                    <img class="top" src="site/hotbar_select.png" style="left: -1px;  visibility: hidden;" id="hotbar0">
+                    <img class="top" src="site/hotbar_select.png" style="left: 70px;  visibility: hidden;" id="hotbar1">
+                    <img class="top" src="site/hotbar_select.png" style="left: 140px; visibility: hidden;" id="hotbar2">
+                    <img class="top" src="site/hotbar_select.png" style="left: 210px; visibility: hidden;" id="hotbar3">
+                    <img class="top" src="site/hotbar_select.png" style="left: 280px; visibility: hidden;" id="hotbar4">
+                    <img class="top" src="site/hotbar_select.png" style="left: 350px; visibility: hidden;" id="hotbar5">
+                    <img class="top" src="site/hotbar_select.png" style="left: 420px; visibility: hidden;" id="hotbar6">
+                    <img class="top" src="site/hotbar_select.png" style="left: 490px; visibility: hidden;" id="hotbar7">
+                    <img class="top" src="site/hotbar_select.png" style="left: 560px; visibility: hidden;" id="hotbar8">
+                </div>
+                
+                <p id="selectedBlock"></p>
+            </div>
+
+
+
+
+
+
+            <div class="controls-container">
+                <p id="fps"></p>
+                <div>
+                    <p style="margin: 0; padding: 0;">Player coordinates:</p>
+                    <p style="color: red; margin: 0; padding: 0;" id="playerCoordX">X:</p>
+                    <p style="color: green; margin: 0; padding: 0;" id="playerCoordY">Y:</p>
+                    <p style="color: blue; margin: 0; padding: 0;" id="playerCoordZ">Z:</p>
+                </div>
+                <div>
+                    <p style="margin-top: 1; margin-bottom: 0; padding: 0;">Chunk coordinates:</p>
+                    <p style="margin: 0; padding: 0;" id="chunkCoords"></p>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <p style="margin-top: 1; margin-bottom: 0; padding: 0;">Direction:</p>
+                    <p style="margin: 0; padding: 0;" id="compass"></p>
+                </div>
+                <div>
+                    <p style="margin: 0; padding: 0;">Controls</p>
+                    <ul>
+                        <li style="margin: 0; padding: 0; font-size: 15px;">WASD to move around</li>
+                        <li style="margin: 0; padding: 0; font-size: 15px;">Space to move up</li>
+                        <li style="margin: 0; padding: 0; font-size: 15px;">Left shift to move down</li>
+                        <li style="margin: 0; padding: 0; font-size: 15px;">Mouse to look</li>
+                        <li style="margin: 0; padding: 0; font-size: 15px;">Scrollwheel to select block</li>
+                        <li style="margin: 0; padding: 0; font-size: 15px;">Left click to break block at cursor</li>
+                        <li style="margin: 0; padding: 0; font-size: 15px;">Right click to place selected block at cursor</li>
+                    </ul>
+                </div>
+
+
+            </div>
+        </div>
+        
+        <script src="lib/webgl-utils.js"></script>
+        <script src="lib/webgl-debug.js"></script>
+        <script src="lib/cuon-utils.js"></script>
+        <script src="lib/cuon-matrix.js"></script>
+        <script src="lib/Noise.js"></script>
+        <script src='lib/perlin.js'></script>
+        <script src="UIManager.js"></script>
+        <script src="TextureAtlasManager.js"></script>
+        <script src="PlayerController.js"></script>
+        <script src="InfiniteTerrain.js"></script>
+        <script src="asgn3b.js"></script>
+        <script src="Cube.js"></script>
+        <script src="Camera.js"></script>
+        <script src="Chunk.js"></script>
+        <br><br>
+        
+        
+        <!-- <h2>Notes to Grader</h2> <br>
+
+        The comically large stone block is supposed to be my "ground plane." -->
+    </body>
+</html>
