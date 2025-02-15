@@ -239,7 +239,8 @@ function main(firstStart = true) {
     }
 
     skybox = new Cube("skybox");
-    crosshairCube = new Cube("stone_block")
+    crosshairCube = new Cube("stone_block");
+    crosshairCube.isAir = false;
 
     for (let i = 0; i <= 5; i++)
         skybox[i] = new Cube("skybox");
@@ -296,8 +297,10 @@ function renderAllShapes() {
 
     crosshairCube.matrix.setTranslate(camera.at.x, camera.at.y, camera.at.z);
     crosshairCube.matrix.scale(0.1, 0.1, 0.1);
-    crosshairCube.texture = GetUVsForTexture(inventory[selectedSlot]);
+    crosshairCube.texture = new Float32Array(GetUVsForTexture(inventory[selectedSlot]));
     crosshairCube.renderFast();
+
+    console.log(inventory[selectedSlot], crosshairCube.texture)
 
     updateVisibleChunks();
 }
