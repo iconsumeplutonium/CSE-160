@@ -299,9 +299,7 @@ function renderAllShapes() {
     crosshairCube.matrix.scale(0.1, 0.1, 0.1);
     crosshairCube.texture = new Float32Array(GetUVsForTexture(inventory[selectedSlot]));
     crosshairCube.renderFast();
-
-    console.log(inventory[selectedSlot], crosshairCube.texture)
-
+    
     updateVisibleChunks();
 }
 
