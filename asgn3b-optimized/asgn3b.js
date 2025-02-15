@@ -36,7 +36,7 @@ let globalRotx, globalRoty, globalRotz;
 
 let mouseDelta = new Vector3();
 let camera;
-const chunkSize = 1;
+const chunkSize = 12;
 let skybox = [];
 let c;
 
@@ -122,13 +122,11 @@ function connectVariablesToGLSL() {
         return;
     }
 
-    instancingExtension = gl.getExtension("ANGLE_instanced_arrays");
-    if (!instancingExtension) {
-        console.log('failed to get ANGLED_instanced_arrays extension');
-        return;
-    }
-
-    c = new Cube("stone_block");
+    // instancingExtension = gl.getExtension("ANGLE_instanced_arrays");
+    // if (!instancingExtension) {
+    //     console.log('failed to get ANGLED_instanced_arrays extension');
+    //     return;
+    // }
 }
 
 
@@ -301,8 +299,7 @@ function renderAllShapes() {
     crosshairCube.texture = GetUVsForTexture(inventory[selectedSlot]);
     crosshairCube.renderFast();
 
-    c.renderFast()
-    //updateVisibleChunks();
+    updateVisibleChunks();
 }
 
 //because I enabled backface culling, placing a super large cube around the player wont work because the inside
